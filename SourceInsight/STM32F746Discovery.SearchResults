@@ -1,0 +1,5 @@
+---- SystemInit Matches (4 in 2 files) ----
+Startup_stm32f746xx.s:/* stack used for SystemInit_ExtMemCtl; always internal RAM used */
+Startup_stm32f746xx.s:  bl  SystemInit   
+System_stm32f7xx.c (src):  *      - SystemInit(): This function is called at startup just after reset and 
+System_stm32f7xx.c (src):void SystemInit(void)
