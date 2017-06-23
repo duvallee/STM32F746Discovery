@@ -20,7 +20,7 @@ echo $TOOLCHAIN_PATH
 
 # --------------------------------------------------------------------------------------
 # excute gdb 
-${TOOLCHAIN_PREFIX}-gdb ./build/STM32F746Discovery.elf
+${TOOLCHAIN_PREFIX}-gdb $1 ./build/STM32F746Discovery.elf
 
 if [ $? != 0 ]
 then
