@@ -75,6 +75,77 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 1 */
 }
 
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+{
+
+  if(htim_base->Instance==TIM6)
+  {
+  /* USER CODE BEGIN TIM6_MspInit 0 */
+
+  /* USER CODE END TIM6_MspInit 0 */
+    /* Peripheral clock enable */
+    __HAL_RCC_TIM6_CLK_ENABLE();
+  /* USER CODE BEGIN TIM6_MspInit 1 */
+
+  /* USER CODE END TIM6_MspInit 1 */
+  }
+
+}
+
+void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
+{
+
+  if(htim_base->Instance==TIM6)
+  {
+  /* USER CODE BEGIN TIM6_MspDeInit 0 */
+
+  /* USER CODE END TIM6_MspDeInit 0 */
+    /* Peripheral clock disable */
+    __HAL_RCC_TIM6_CLK_DISABLE();
+  /* USER CODE BEGIN TIM6_MspDeInit 1 */
+
+  /* USER CODE END TIM6_MspDeInit 1 */
+  }
+
+}
+
+void HAL_UART_MspInit(UART_HandleTypeDef* huart)
+{
+
+   GPIO_InitTypeDef GPIO_InitStruct;
+   if (huart->Instance == USART6)
+   {
+      /* Peripheral clock enable */
+      __HAL_RCC_USART6_CLK_ENABLE();
+
+      /**USART6 GPIO Configuration    
+      PC6     ------> USART6_TX
+      PC7     ------> USART6_RX 
+      */
+      GPIO_InitStruct.Pin = GPIO_PIN_6 | GPIO_PIN_7;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_PULLUP;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+      GPIO_InitStruct.Alternate = GPIO_AF8_USART6;
+      HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+  }
+}
+
+void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
+{
+   if(huart->Instance==USART6)
+   {
+      /* Peripheral clock disable */
+      __HAL_RCC_USART6_CLK_DISABLE();
+
+      /**USART6 GPIO Configuration    
+      PC6     ------> USART6_TX
+      PC7     ------> USART6_RX 
+      */
+      HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+   }
+}
+
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

@@ -39,9 +39,16 @@
 #include "main.h"
 #include "stm32f7xx_hal.h"
 
+// global variable
+TIM_HandleTypeDef htim6;
+UART_HandleTypeDef huart6;
+
+
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_USART6_UART_Init(void);
+static void MX_TIM6_Init(void);
 
 int main(void)
 {
@@ -52,6 +59,17 @@ int main(void)
 
    MX_GPIO_Init();
 
+   MX_USART6_UART_Init();
+   MX_TIM6_Init();
+
+
+   /*Configure GPIO pin : PI1, D1 */
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
    /*Configure GPIO pin : PI1, D1 */
    GPIO_InitStruct.Pin                                   = GPIO_PIN_1;
    GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
@@ -59,14 +77,34 @@ int main(void)
    GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
    HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
+   if (HAL_UART_Transmit(&huart6, "Hellow World !!!", sizeof("Hellow World !!!"), 1000) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
    while (1)
    {
       HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, 0);
-      HAL_Delay(1000);
+      HAL_Delay(500);
       HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, 1);
-      HAL_Delay(1000);
+      HAL_Delay(500);
    }
 }
+
+
+void HAL_SYSTICK_Callback(void)
+{
+   if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == 0)
+   {
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);
+   }
+   else
+   {
+      HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 0);
+   }
+}
+
+
 
 /** System Clock Configuration
 */
@@ -74,6 +112,7 @@ void SystemClock_Config(void)
 {
    RCC_OscInitTypeDef RCC_OscInitStruct;
    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
    /**Configure the main internal regulator output voltage 
    */
@@ -107,6 +146,13 @@ void SystemClock_Config(void)
       _Error_Handler(__FILE__, __LINE__);
    }
 
+   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
+   PeriphClkInitStruct.Usart6ClockSelection = RCC_USART6CLKSOURCE_PCLK2;
+   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
    /**Configure the Systick interrupt time 
    */
    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
@@ -130,8 +176,51 @@ static void MX_GPIO_Init(void)
 {
    /* GPIO Ports Clock Enable */
    __HAL_RCC_GPIOA_CLK_ENABLE();
+   __HAL_RCC_GPIOC_CLK_ENABLE();
    __HAL_RCC_GPIOH_CLK_ENABLE();
    __HAL_RCC_GPIOI_CLK_ENABLE();
+}
+
+/* TIM6 init function */
+static void MX_TIM6_Init(void)
+{
+   TIM_MasterConfigTypeDef sMasterConfig;
+
+   htim6.Instance                                        = TIM6;
+   htim6.Init.Prescaler                                  = 0;
+   htim6.Init.CounterMode                                = TIM_COUNTERMODE_UP;
+   htim6.Init.Period                                     = 0;
+   htim6.Init.AutoReloadPreload                          = TIM_AUTORELOAD_PRELOAD_DISABLE;
+   if (HAL_TIM_Base_Init(&htim6) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sMasterConfig.MasterOutputTrigger                     = TIM_TRGO_RESET;
+   sMasterConfig.MasterSlaveMode                         = TIM_MASTERSLAVEMODE_DISABLE;
+   if (HAL_TIMEx_MasterConfigSynchronization(&htim6, &sMasterConfig) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+}
+
+static void MX_USART6_UART_Init(void)
+{
+   huart6.Instance                                       = USART6;
+   huart6.Init.BaudRate                                  = 115200;
+   huart6.Init.WordLength                                = UART_WORDLENGTH_8B;
+   huart6.Init.StopBits                                  = UART_STOPBITS_1;
+   huart6.Init.Parity                                    = UART_PARITY_NONE;
+   huart6.Init.Mode                                      = UART_MODE_TX_RX;
+   huart6.Init.HwFlowCtl                                 = UART_HWCONTROL_NONE;
+   huart6.Init.OverSampling                              = UART_OVERSAMPLING_16;
+   huart6.Init.OneBitSampling                            = UART_ONE_BIT_SAMPLE_DISABLE;
+   huart6.AdvancedInit.AdvFeatureInit                    = UART_ADVFEATURE_NO_INIT;
+   if (HAL_UART_Init(&huart6) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
 }
 
 /**
