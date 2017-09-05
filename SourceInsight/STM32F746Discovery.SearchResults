@@ -1,5 +1,9 @@
----- SystemInit Matches (4 in 2 files) ----
-Startup_stm32f746xx.s:/* stack used for SystemInit_ExtMemCtl; always internal RAM used */
-Startup_stm32f746xx.s:  bl  SystemInit   
-System_stm32f7xx.c (src):  *      - SystemInit(): This function is called at startup just after reset and 
-System_stm32f7xx.c (src):void SystemInit(void)
+---- HAL_InitTick Matches (8 in 6 files) ----
+Stm32f7xx_hal.c (drivers\stm32f7xx_hal_driver\src):        (++) Time base configuration function (HAL_InitTick ()) is called automatically 
+Stm32f7xx_hal.c (drivers\stm32f7xx_hal_driver\src):  HAL_InitTick(TICK_INT_PRIORITY);
+Stm32f7xx_hal.c (drivers\stm32f7xx_hal_driver\src):__weak HAL_StatusTypeDef HAL_InitTick(uint32_t TickPriority)
+Stm32f7xx_hal.h (drivers\stm32f7xx_hal_driver\inc):HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority);
+Stm32f7xx_hal_rcc.c (drivers\stm32f7xx_hal_driver\src):  HAL_InitTick (TICK_INT_PRIORITY);
+Stm32f7xx_hal_timebase_rtc_alarm_template.c (drivers\stm32f7xx_hal_driver\src):HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority)
+Stm32f7xx_hal_timebase_rtc_wakeup_template.c (drivers\stm32f7xx_hal_driver\src):HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority)
+Stm32f7xx_hal_timebase_tim_template.c (drivers\stm32f7xx_hal_driver\src):HAL_StatusTypeDef HAL_InitTick (uint32_t TickPriority)
