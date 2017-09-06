@@ -37,12 +37,21 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "printf.h"
 #include "stm32f7xx_hal.h"
 
 // global variable
 TIM_HandleTypeDef htim6;
 UART_HandleTypeDef huart6;
 
+int _putc(unsigned char ch)
+{
+   if (HAL_UART_Transmit(&huart6, (uint8_t *) &ch, sizeof(ch), 0xFFFF) == HAL_OK)
+   {
+      return 0;
+   }
+   return -1;
+}
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -50,6 +59,11 @@ static void MX_GPIO_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM6_Init(void);
 
+/* --------------------------------------------------------------------------
+ * Name : main()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 int main(void)
 {
    GPIO_InitTypeDef GPIO_InitStruct;
@@ -61,7 +75,6 @@ int main(void)
 
    MX_USART6_UART_Init();
    MX_TIM6_Init();
-
 
    /*Configure GPIO pin : PI1, D1 */
    GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
@@ -77,10 +90,14 @@ int main(void)
    GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
    HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
-   if (HAL_UART_Transmit(&huart6, "Hellow World !!!", sizeof("Hellow World !!!"), 1000) != HAL_OK)
-   {
-      _Error_Handler(__FILE__, __LINE__);
-   }
+   HAL_Delay(1000);
+   HAL_Delay(1000);
+   HAL_Delay(1000);
+
+   printf("===================================================== \r\n");
+   printf("BUILD   : %s %s \r\n", __DATE__, __TIME__);
+   printf("VERSION : ver0.1.3 \r\n");
+   printf("===================================================== \r\n");
 
    while (1)
    {
