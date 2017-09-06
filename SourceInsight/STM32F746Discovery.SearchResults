@@ -1,15 +1,6 @@
----- HAL_UART_Init Matches (14 in 3 files) ----
-Main.c (src):   if (HAL_UART_Init(&huart6) != HAL_OK)
-Stm32f7xx_hal_uart.c (drivers\stm32f7xx_hal_driver\src):        the HAL_UART_Init() API.
-Stm32f7xx_hal_uart.c (drivers\stm32f7xx_hal_driver\src):       (@) These APIs (HAL_UART_Init() and HAL_HalfDuplex_Init()) configure also the
-Stm32f7xx_hal_uart.c (drivers\stm32f7xx_hal_driver\src):    The HAL_UART_Init(), HAL_HalfDuplex_Init(), HAL_LIN_Init() and HAL_MultiProcessor_Init() APIs
-Stm32f7xx_hal_uart.c (drivers\stm32f7xx_hal_driver\src):HAL_StatusTypeDef HAL_UART_Init(UART_HandleTypeDef *huart)
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *         without need to call HAL_UART_Init() function.
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *         without need to call HAL_UART_Init() function.
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *         without need to call HAL_UART_Init() function.
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *         without need to call HAL_UART_Init() function.
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):  *           - UART instance should have already been initialised (through call of HAL_UART_Init() )
-Stm32f7xx_hal_uart.h (drivers\stm32f7xx_hal_driver\inc):HAL_StatusTypeDef HAL_UART_Init(UART_HandleTypeDef *huart);
+---- g_System_Start_Second Matches (5 in 2 files) ----
+Debug_output.h (src\common):                                             (int) g_System_Start_Second,        \
+Debug_output.h (src\common):extern uint32_t g_System_Start_Second;
+Main.c (src):uint32_t g_System_Start_Second                           = 0;
+Main.c (src):      debug_output_error("test message : %d, %d \r\n", g_System_Start_Second, i++);
+Main.c (src):      g_System_Start_Second++;
