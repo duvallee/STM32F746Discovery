@@ -37,13 +37,22 @@
   */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "printf.h"
 #include "stm32f7xx_hal.h"
+#include "debug_output.h"
 
 // global variable
 TIM_HandleTypeDef htim6;
 UART_HandleTypeDef huart6;
 
+#define MILLI_SECOND                                     1000
+volatile uint32_t g_System_Start_Second                           = 0;
+volatile uint16_t g_System_Start_Milli_Second                     = 0;
+
+/* --------------------------------------------------------------------------
+ * Name : _putc()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 int _putc(unsigned char ch)
 {
    if (HAL_UART_Transmit(&huart6, (uint8_t *) &ch, sizeof(ch), 0xFFFF) == HAL_OK)
@@ -90,27 +99,37 @@ int main(void)
    GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
    HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
-   HAL_Delay(1000);
-   HAL_Delay(1000);
-   HAL_Delay(1000);
-
-   printf("===================================================== \r\n");
-   printf("BUILD   : %s %s \r\n", __DATE__, __TIME__);
-   printf("VERSION : ver0.1.3 \r\n");
-   printf("===================================================== \r\n");
+   debug_output_info("===================================================== \r\n");
+   debug_output_info("BUILD   : %s %s \r\n", __DATE__, __TIME__);
+   debug_output_info("VERSION : ver0.1.4 \r\n");
+   debug_output_info("===================================================== \r\n");
 
    while (1)
    {
       HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, 0);
-      HAL_Delay(500);
+      HAL_Delay(5000);
       HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, 1);
-      HAL_Delay(500);
+      HAL_Delay(5000);
+      debug_output_debug("test message !!! \r\n");
    }
 }
 
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_SYSTICK_Callback()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_SYSTICK_Callback(void)
 {
+   g_System_Start_Milli_Second++;
+
+   if (g_System_Start_Milli_Second >= MILLI_SECOND)
+   {
+      g_System_Start_Second++;
+      g_System_Start_Milli_Second                        = 0;
+   }
+
    if (HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_0) == 0)
    {
       HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, 1);
@@ -122,9 +141,11 @@ void HAL_SYSTICK_Callback(void)
 }
 
 
-
-/** System Clock Configuration
-*/
+/* --------------------------------------------------------------------------
+ * Name : SystemClock_Config()
+ *        System Clock Configuration
+ *
+ * -------------------------------------------------------------------------- */
 void SystemClock_Config(void)
 {
    RCC_OscInitTypeDef RCC_OscInitStruct;
@@ -182,6 +203,11 @@ void SystemClock_Config(void)
    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
+/* --------------------------------------------------------------------------
+ * Name : MX_GPIO_Init()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 /** Configure pins as 
         * Analog 
         * Input 
@@ -198,6 +224,11 @@ static void MX_GPIO_Init(void)
    __HAL_RCC_GPIOI_CLK_ENABLE();
 }
 
+/* --------------------------------------------------------------------------
+ * Name : MX_TIM6_Init()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 /* TIM6 init function */
 static void MX_TIM6_Init(void)
 {
@@ -222,6 +253,11 @@ static void MX_TIM6_Init(void)
 
 }
 
+/* --------------------------------------------------------------------------
+ * Name : MX_USART6_UART_Init()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 static void MX_USART6_UART_Init(void)
 {
    huart6.Instance                                       = USART6;
@@ -240,6 +276,11 @@ static void MX_USART6_UART_Init(void)
    }
 }
 
+/* --------------------------------------------------------------------------
+ * Name : _Error_Handler()
+ *
+ *
+ * -------------------------------------------------------------------------- */
 /**
   * @brief  This function is executed in case of error occurrence.
   * @param  None
