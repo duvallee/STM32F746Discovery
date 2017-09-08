@@ -31,7 +31,7 @@ Copyright (c) duvallee
 
 #if defined(DEBUG_STRING_LEVEL_WARN)
 #define debug_output_warn(fmt, ...)                                              \
-         printf("[%06d.%03d:%s-%s-%d-WARN] " fmt,                                \
+         printf("[%06d.%03d:%s-%s-%d-WARN ] " fmt,                               \
                                              (int) g_System_Start_Second,        \
                                              (int) g_System_Start_Milli_Second,  \
                                              __FILE__,                           \
@@ -59,7 +59,7 @@ Copyright (c) duvallee
 
 #if defined(DEBUG_STRING_LEVEL_FN_TRACE)
 #define debug_output_fn(fmt, ...)                                                \
-         printf("[%06d.%03d:%s-%s-%d-FN] " fmt,                                  \
+         printf("[%06d.%03d:%s-%s-%d-FN   ] " fmt,                               \
                                              (int) g_System_Start_Second,        \
                                              (int) g_System_Start_Milli_Second,  \
                                              __FILE__,                           \
@@ -73,7 +73,7 @@ Copyright (c) duvallee
 
 #if defined(DEBUG_STRING_LEVEL_INFO)
 #define debug_output_info(fmt, ...)                                              \
-         printf("[%06d.%03d:%s-%s-%d-INFO] " fmt,                                \
+         printf("[%06d.%03d:%s-%s-%d-INFO ] " fmt,                               \
                                              (int) g_System_Start_Second,        \
                                              (int) g_System_Start_Milli_Second,  \
                                              __FILE__,                           \

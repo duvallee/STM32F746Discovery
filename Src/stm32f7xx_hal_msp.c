@@ -75,38 +75,162 @@ void HAL_MspInit(void)
   /* USER CODE END MspInit 1 */
 }
 
-void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+
+void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc)
 {
 
-  if(htim_base->Instance==TIM6)
-  {
-  /* USER CODE BEGIN TIM6_MspInit 0 */
+   GPIO_InitTypeDef GPIO_InitStruct;
+   if (hltdc->Instance == LTDC)
+   {
+      /* USER CODE BEGIN LTDC_MspInit 0 */
 
-  /* USER CODE END TIM6_MspInit 0 */
-    /* Peripheral clock enable */
-    __HAL_RCC_TIM6_CLK_ENABLE();
-  /* USER CODE BEGIN TIM6_MspInit 1 */
+      /* USER CODE END LTDC_MspInit 0 */
+      /* Peripheral clock enable */
+      __HAL_RCC_LTDC_CLK_ENABLE();
 
-  /* USER CODE END TIM6_MspInit 1 */
-  }
+      /**LTDC GPIO Configuration    
+      PB8     ------> LTDC_B6
+      PB9     ------> LTDC_B7
+      PG11     ------> LTDC_B3
+      PA12     ------> LTDC_R5
+      PI4     ------> LTDC_B4
+      PK7     ------> LTDC_DE
+      PG10     ------> LTDC_G3
+      PD3     ------> LTDC_G7
+      PA11     ------> LTDC_R4
+      PI5     ------> LTDC_B5
+      PI10     ------> LTDC_HSYNC
+      PH15     ------> LTDC_G4
+      PI1     ------> LTDC_G6
+      PI9     ------> LTDC_VSYNC
+      PH13     ------> LTDC_G2
+      PI0     ------> LTDC_G5
+      PA8     ------> LTDC_R6
+      PI14     ------> LTDC_CLK
+      PG6     ------> LTDC_R7
+      PH9     ------> LTDC_R3 
+      */
+      GPIO_InitStruct.Pin = GPIO_PIN_8|GPIO_PIN_9;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+      GPIO_InitStruct.Pin = GPIO_PIN_11|GPIO_PIN_6;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+      GPIO_InitStruct.Pin = GPIO_PIN_12|GPIO_PIN_11|GPIO_PIN_8;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+      GPIO_InitStruct.Pin = GPIO_PIN_4|GPIO_PIN_5|GPIO_PIN_10|GPIO_PIN_1 
+        |GPIO_PIN_9|GPIO_PIN_0|GPIO_PIN_14;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+
+      GPIO_InitStruct.Pin = GPIO_PIN_7;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
+
+      GPIO_InitStruct.Pin = GPIO_PIN_10;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF9_LTDC;
+      HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+      GPIO_InitStruct.Pin = GPIO_PIN_3;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+
+      GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_13|GPIO_PIN_9;
+      GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+      GPIO_InitStruct.Pull = GPIO_NOPULL;
+      GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+      GPIO_InitStruct.Alternate = GPIO_AF14_LTDC;
+      HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+      /* USER CODE BEGIN LTDC_MspInit 1 */
+
+      /* USER CODE END LTDC_MspInit 1 */
+      }
+
+}
+
+void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* hltdc)
+{
+   if(hltdc->Instance==LTDC)
+   {
+      /* Peripheral clock disable */
+      __HAL_RCC_LTDC_CLK_DISABLE();
+
+      /**LTDC GPIO Configuration    
+      PB8     ------> LTDC_B6
+      PB9     ------> LTDC_B7
+      PG11     ------> LTDC_B3
+      PA12     ------> LTDC_R5
+      PI4     ------> LTDC_B4
+      PK7     ------> LTDC_DE
+      PG10     ------> LTDC_G3
+      PD3     ------> LTDC_G7
+      PA11     ------> LTDC_R4
+      PI5     ------> LTDC_B5
+      PI10     ------> LTDC_HSYNC
+      PH15     ------> LTDC_G4
+      PI1     ------> LTDC_G6
+      PI9     ------> LTDC_VSYNC
+      PH13     ------> LTDC_G2
+      PI0     ------> LTDC_G5
+      PA8     ------> LTDC_R6
+      PI14     ------> LTDC_CLK
+      PG6     ------> LTDC_R7
+      PH9     ------> LTDC_R3 
+      */
+      HAL_GPIO_DeInit(GPIOB, GPIO_PIN_8 | GPIO_PIN_9);
+      HAL_GPIO_DeInit(GPIOG, GPIO_PIN_11 | GPIO_PIN_10 | GPIO_PIN_6);
+      HAL_GPIO_DeInit(GPIOA, GPIO_PIN_12 | GPIO_PIN_11 | GPIO_PIN_8);
+
+      HAL_GPIO_DeInit(GPIOI, GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_10 | GPIO_PIN_1 |
+                             GPIO_PIN_9 | GPIO_PIN_0 | GPIO_PIN_14);
+      HAL_GPIO_DeInit(GPIOK, GPIO_PIN_7);
+      HAL_GPIO_DeInit(GPIOD, GPIO_PIN_3);
+      HAL_GPIO_DeInit(GPIOH, GPIO_PIN_15 | GPIO_PIN_13 | GPIO_PIN_9);
+   }
+}
+
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
+{
+   if(htim_base->Instance==TIM6)
+   {
+      /* Peripheral clock enable */
+      __HAL_RCC_TIM6_CLK_ENABLE();
+   }
 }
 
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 {
-
-  if(htim_base->Instance==TIM6)
-  {
-  /* USER CODE BEGIN TIM6_MspDeInit 0 */
-
-  /* USER CODE END TIM6_MspDeInit 0 */
-    /* Peripheral clock disable */
-    __HAL_RCC_TIM6_CLK_DISABLE();
-  /* USER CODE BEGIN TIM6_MspDeInit 1 */
-
-  /* USER CODE END TIM6_MspDeInit 1 */
-  }
-
+   if(htim_base->Instance==TIM6)
+   {
+      /* Peripheral clock disable */
+      __HAL_RCC_TIM6_CLK_DISABLE();
+   }
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)

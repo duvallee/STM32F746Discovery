@@ -69,6 +69,7 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c \
 Src/stm32f7xx_hal_msp.c
 
 # ASM sources
