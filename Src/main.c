@@ -48,10 +48,10 @@ UART_HandleTypeDef huart6;
 LTDC_HandleTypeDef hltdc;
 
 #define MILLI_SECOND                                     1000
-volatile uint32_t g_System_Start_Second                           = 0;
-volatile uint16_t g_System_Start_Milli_Second                     = 0;
+volatile uint32_t g_System_Start_Second                  = 0;
+volatile uint16_t g_System_Start_Milli_Second            = 0;
 
-#define FRAMEBUFFER_SIZE                                 (480 * 272)
+#define FRAMEBUFFER_SIZE                                 (RK043FN48H_WIDTH * RK043FN48H_HEIGHT)
 volatile uint16_t g_FrameBuffer[FRAMEBUFFER_SIZE];
 
 /* --------------------------------------------------------------------------
@@ -129,16 +129,35 @@ int main(void)
    debug_output_info("VERSION : ver0.1.4 \r\n");
    debug_output_info("===================================================== \r\n");
 
-//   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_SET);     // Display on
-//   HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_SET);      // Backlight on
+   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_SET);     // Display on
+   HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_SET);      // Backlight on
 
    while (1)
    {
-      HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, 0);
-      HAL_Delay(5000);
-      HAL_GPIO_WritePin(GPIOI, GPIO_PIN_1, 1);
-      HAL_Delay(5000);
-      debug_output_debug("test message !!! \r\n");
+      debug_output_debug("Blue !!! \r\n");
+      for (i = 0; i < (FRAMEBUFFER_SIZE / 2); i++)
+      {
+         g_FrameBuffer[i]                                = 0x001F;
+      }
+      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+      HAL_Delay(1000);
+
+      debug_output_debug("Green !!! \r\n");
+      for (i = 0; i < (FRAMEBUFFER_SIZE / 2); i++)
+      {
+         g_FrameBuffer[i]                                = 0x07E0;
+      }
+      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+      HAL_Delay(1000);
+
+      debug_output_debug("Red !!! \r\n");
+      for (i = 0; i < (FRAMEBUFFER_SIZE / 2); i++)
+      {
+         g_FrameBuffer[i]                                = 0xF800;
+      }
+      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+      HAL_Delay(1000);
+
    }
 }
 
@@ -235,7 +254,6 @@ void SystemClock_Config(void)
 {
    RCC_OscInitTypeDef RCC_OscInitStruct;
    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-   RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
 
    /**Configure the main internal regulator output voltage 
    */
@@ -246,7 +264,7 @@ void SystemClock_Config(void)
    /**Initializes the CPU, AHB and APB busses clocks 
    */
    RCC_OscInitStruct.OscillatorType                      = RCC_OSCILLATORTYPE_HSE;
-   RCC_OscInitStruct.HSEState                            = RCC_HSE_BYPASS;
+   RCC_OscInitStruct.HSEState                            = RCC_HSE_ON;
    RCC_OscInitStruct.PLL.PLLState                        = RCC_PLL_ON;
    RCC_OscInitStruct.PLL.PLLSource                       = RCC_PLLSOURCE_HSE;
    RCC_OscInitStruct.PLL.PLLM                            = 25;
@@ -281,18 +299,6 @@ void SystemClock_Config(void)
       _Error_Handler(__FILE__, __LINE__);
    }
 
-   PeriphClkInitStruct.PeriphClockSelection              = RCC_PERIPHCLK_LTDC;
-   PeriphClkInitStruct.PLLSAI.PLLSAIN                    = 192;
-   PeriphClkInitStruct.PLLSAI.PLLSAIR                    = 5;
-   PeriphClkInitStruct.PLLSAI.PLLSAIQ                    = 2;
-   PeriphClkInitStruct.PLLSAI.PLLSAIP                    = RCC_PLLSAIP_DIV2;
-   PeriphClkInitStruct.PLLSAIDivQ                        = 1;
-   PeriphClkInitStruct.PLLSAIDivR                        = RCC_PLLSAIDIVR_4;
-   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-   {
-      _Error_Handler(__FILE__, __LINE__);
-   }
-
    /**Configure the Systick interrupt time 
    */
    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
@@ -320,14 +326,14 @@ static void MX_LTDC_Init(void)
    hltdc.Init.VSPolarity                                 = LTDC_VSPOLARITY_AL;
    hltdc.Init.DEPolarity                                 = LTDC_DEPOLARITY_AL;
    hltdc.Init.PCPolarity                                 = LTDC_PCPOLARITY_IPC;
-   hltdc.Init.HorizontalSync                             = 40;
-   hltdc.Init.VerticalSync                               = 9;
-   hltdc.Init.AccumulatedHBP                             = 53;
-   hltdc.Init.AccumulatedVBP                             = 11;
-   hltdc.Init.AccumulatedActiveW                         = 533;
-   hltdc.Init.AccumulatedActiveH                         = 283;
-   hltdc.Init.TotalWidth                                 = 565;
-   hltdc.Init.TotalHeigh                                 = 285;
+   hltdc.Init.HorizontalSync                             = (RK043FN48H_HSYNC - 1);
+   hltdc.Init.VerticalSync                               = (RK043FN48H_VSYNC - 1);
+   hltdc.Init.AccumulatedHBP                             = (RK043FN48H_HSYNC + RK043FN48H_HBP - 1);;
+   hltdc.Init.AccumulatedVBP                             = (RK043FN48H_VSYNC + RK043FN48H_VBP- 1);;
+   hltdc.Init.AccumulatedActiveW                         = (RK043FN48H_WIDTH + RK043FN48H_HSYNC + RK043FN48H_HBP - 1);
+   hltdc.Init.AccumulatedActiveH                         = (RK043FN48H_HEIGHT + RK043FN48H_VSYNC + RK043FN48H_VBP - 1);
+   hltdc.Init.TotalWidth                                 = (RK043FN48H_WIDTH + RK043FN48H_HSYNC + RK043FN48H_HBP + RK043FN48H_HFP - 1);
+   hltdc.Init.TotalHeigh                                 = (RK043FN48H_HEIGHT + RK043FN48H_VSYNC + RK043FN48H_VBP + RK043FN48H_VFP - 1);;
    hltdc.Init.Backcolor.Blue                             = 0;
    hltdc.Init.Backcolor.Green                            = 0;
    hltdc.Init.Backcolor.Red                              = 0;
@@ -337,18 +343,18 @@ static void MX_LTDC_Init(void)
    }
 
    pLayerCfg.WindowX0                                    = 0;
-   pLayerCfg.WindowX1                                    = 479;
+   pLayerCfg.WindowX1                                    = (RK043FN48H_WIDTH - 1);
    pLayerCfg.WindowY0                                    = 0;
-   pLayerCfg.WindowY1                                    = 271;
+   pLayerCfg.WindowY1                                    = (RK043FN48H_HEIGHT - 1);
    pLayerCfg.PixelFormat                                 = LTDC_PIXEL_FORMAT_RGB565;
    pLayerCfg.Alpha                                       = 255;
    pLayerCfg.Alpha0                                      = 0;
    pLayerCfg.BlendingFactor1                             = LTDC_BLENDING_FACTOR1_CA;
    pLayerCfg.BlendingFactor2                             = LTDC_BLENDING_FACTOR2_CA;
    pLayerCfg.FBStartAdress                               = (uint32_t) g_FrameBuffer;
-   pLayerCfg.ImageWidth                                  = 480;
-   pLayerCfg.ImageHeight                                 = 272;
-   pLayerCfg.Backcolor.Blue                              = 1;
+   pLayerCfg.ImageWidth                                  = RK043FN48H_WIDTH;
+   pLayerCfg.ImageHeight                                 = RK043FN48H_HEIGHT;
+   pLayerCfg.Backcolor.Blue                              = 0;
    pLayerCfg.Backcolor.Green                             = 0;
    pLayerCfg.Backcolor.Red                               = 0;
    if (HAL_LTDC_ConfigLayer(&hltdc, &pLayerCfg, 0) != HAL_OK)

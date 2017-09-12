@@ -38,29 +38,19 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
-  /* Includes ------------------------------------------------------------------*/
-
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Private define ------------------------------------------------------------*/
-
-/* USER CODE BEGIN Private defines */
-
-/* USER CODE END Private defines */
 
 void _Error_Handler(char *, int);
-
 #define Error_Handler() _Error_Handler(__FILE__, __LINE__)
 
-/**
-  * @}
-  */ 
+#define RK043FN48H_WIDTH                                 480                     // LCD Pixel Width
+#define RK043FN48H_HEIGHT                                272                     // LCD Pixel Height
 
-/**
-  * @}
-*/ 
+#define RK043FN48H_HSYNC                                 41                      // Horizontal Synchronization
+#define RK043FN48H_HBP                                   13                      // Horizontal Back Porch
+#define RK043FN48H_HFP                                   32                      // Horizontal Front Porch
+#define RK043FN48H_VSYNC                                 10                      // Vertical Synchronization
+#define RK043FN48H_VBP                                   2                       // Vertical Back Porch
+#define RK043FN48H_VFP                                   2                       // Vertical Front Porch
 
 #endif /* __MAIN_H */
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
