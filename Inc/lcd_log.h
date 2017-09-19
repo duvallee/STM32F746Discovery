@@ -1,15 +1,14 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * @file    lcd_log.h
+  * @author  MCD Application Team
+  * @version V1.0.1
+  * @date    18-November-2016
+  * @brief   header for the lcd_log.c file
   ******************************************************************************
-  ** This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * <h2><center>&copy; COPYRIGHT(c) 2016 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -34,27 +33,18 @@
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
   ******************************************************************************
-  */
+  */ 
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef  __LCD_LOG_H__
+#define  __LCD_LOG_H__
 
-// -----------------------------------------------------------------------------
-void _Error_Handler(char *, int);
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+/* Includes ------------------------------------------------------------------*/
 
-// -----------------------------------------------------------------------------
-#define RK043FN48H_WIDTH                                 480                     // LCD Pixel Width
-#define RK043FN48H_HEIGHT                                272                     // LCD Pixel Height
+#include "lcd_log_conf.h"
 
-#define RK043FN48H_HSYNC                                 41                      // Horizontal Synchronization
-#define RK043FN48H_HBP                                   13                      // Horizontal Back Porch
-#define RK043FN48H_HFP                                   32                      // Horizontal Front Porch
-#define RK043FN48H_VSYNC                                 10                      // Vertical Synchronization
-#define RK043FN48H_VBP                                   2                       // Vertical Back Porch
-#define RK043FN48H_VFP                                   2                       // Vertical Front Porch
+void lcd_log_Init(volatile uint32_t* pframebuffer, uint32_t width, uint32_t height, uint32_t pixel_fmt);
+void draw_char(uint8_t ch);
 
-// -----------------------------------------------------------------------------
-
-#endif /* __MAIN_H */
+#endif /* __LCD_LOG_H__ */
 

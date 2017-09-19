@@ -1,15 +1,14 @@
 /**
   ******************************************************************************
-  * File Name          : main.h
-  * Description        : This file contains the common defines of the application
+  * @file    fonts.h
+  * @author  MCD Application Team
+  * @version V1.0.0
+  * @date    18-February-2014
+  * @brief   Header for fonts.c file
   ******************************************************************************
-  ** This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * COPYRIGHT(c) 2017 STMicroelectronics
+  * <h2><center>&copy; COPYRIGHT(c) 2014 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -35,26 +34,34 @@
   *
   ******************************************************************************
   */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __MAIN_H
-#define __MAIN_H
+#ifndef __FONTS_H
+#define __FONTS_H
 
-// -----------------------------------------------------------------------------
-void _Error_Handler(char *, int);
-#define Error_Handler() _Error_Handler(__FILE__, __LINE__)
+#ifdef __cplusplus
+ extern "C" {
+#endif
 
-// -----------------------------------------------------------------------------
-#define RK043FN48H_WIDTH                                 480                     // LCD Pixel Width
-#define RK043FN48H_HEIGHT                                272                     // LCD Pixel Height
+/* Includes ------------------------------------------------------------------*/
+#include <stdint.h>
 
-#define RK043FN48H_HSYNC                                 41                      // Horizontal Synchronization
-#define RK043FN48H_HBP                                   13                      // Horizontal Back Porch
-#define RK043FN48H_HFP                                   32                      // Horizontal Front Porch
-#define RK043FN48H_VSYNC                                 10                      // Vertical Synchronization
-#define RK043FN48H_VBP                                   2                       // Vertical Back Porch
-#define RK043FN48H_VFP                                   2                       // Vertical Front Porch
+typedef struct _tFont
+{    
+  const uint8_t *table;
+  uint16_t Width;
+  uint16_t Height;
+  
+} sFONT;
 
-// -----------------------------------------------------------------------------
+extern sFONT Font16;
+extern sFONT Font12;
+extern sFONT Font8;
 
-#endif /* __MAIN_H */
+#define LINE(x)                                          ((x) * (((sFONT *) BSP_LCD_GetFont())->Height))
+
+#ifdef __cplusplus
+}
+#endif  
+#endif /* __FONTS_H */
 

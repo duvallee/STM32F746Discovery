@@ -37,6 +37,9 @@
 
 /* External variables --------------------------------------------------------*/
 
+extern LTDC_HandleTypeDef hltdc;
+extern DMA2D_HandleTypeDef hdma2d;
+
 /******************************************************************************/
 /*            Cortex-M7 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
@@ -118,5 +121,16 @@ void SysTick_Handler(void)
    HAL_IncTick();
    HAL_SYSTICK_IRQHandler();
 }
+
+/**
+  * @brief  This function handles LTDC global interrupt request.
+  * @param  None
+  * @retval None
+  */
+void LTDC_IRQHandler(void)
+{
+   HAL_LTDC_IRQHandler(&hltdc);
+}
+
 
 

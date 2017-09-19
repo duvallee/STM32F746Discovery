@@ -65,6 +65,10 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c \
 Src/main.c \
 Src/stm32f7xx_it.c \
 Src/common/printf.c \
+Src/font8.c \
+Src/font12.c \
+Src/font16.c \
+Src/lcd_log.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c \
@@ -72,6 +76,7 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sdram.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c \
 Src/stm32f7xx_hal_msp.c
 
 # ASM sources

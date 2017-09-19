@@ -36,9 +36,11 @@
   ******************************************************************************
   */
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
 #include "main.h"
 #include "stm32f7xx_hal.h"
 #include "debug_output.h"
+#include "lcd_log.h"
 
 // #define USE_CLOCK_INTERNAL
 
@@ -46,7 +48,9 @@
 TIM_HandleTypeDef htim6;
 UART_HandleTypeDef huart6;
 LTDC_HandleTypeDef hltdc;
+DMA2D_HandleTypeDef hdma2d;
 SDRAM_HandleTypeDef hsdram1;
+DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 
 #define MILLI_SECOND                                     1000
 volatile uint32_t g_System_Start_Second                  = 0;
@@ -54,8 +58,12 @@ volatile uint16_t g_System_Start_Milli_Second            = 0;
 
 #define FRAMEBUFFER_SIZE                                 (RK043FN48H_WIDTH * RK043FN48H_HEIGHT)
 
-__IO uint32_t *g_FrameBuffer                             = (uint32_t *) 0xC0700000;
+volatile uint32_t *g_DMA2D_FrameBuffer                   = (uint32_t *) 0xC0700000;
+volatile uint32_t *g_FrameBuffer                         = (uint32_t *) 0xC0780000;
+
+// 522,240, 0x7F800, x2 = 0xFF000, 1044,480
 // volatile uint16_t g_FrameBuffer[FRAMEBUFFER_SIZE];
+
 
 /* --------------------------------------------------------------------------
  * Name : _putc()
@@ -64,6 +72,7 @@ __IO uint32_t *g_FrameBuffer                             = (uint32_t *) 0xC07000
  * -------------------------------------------------------------------------- */
 int _putc(unsigned char ch)
 {
+   draw_char(ch);
    if (HAL_UART_Transmit(&huart6, (uint8_t *) &ch, sizeof(ch), 0xFFFF) == HAL_OK)
    {
       return 0;
@@ -75,6 +84,8 @@ int _putc(unsigned char ch)
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_LTDC_Init(void);
+static void MX_DMA2D_Init(void);
+static void MX_DMA_Init(void);
 static void MX_FMC_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM6_Init(void);
@@ -87,22 +98,19 @@ static void MX_TIM6_Init(void);
 int main(void)
 {
    GPIO_InitTypeDef GPIO_InitStruct;
-   int i;
 
    HAL_Init();
    SystemClock_Config();
 
    MX_GPIO_Init();
+   MX_DMA_Init();
    MX_FMC_Init();
    MX_USART6_UART_Init();
    MX_TIM6_Init();
    MX_LTDC_Init();
+   MX_DMA2D_Init();
 
-   // Clear FrameBuffer
-   for (i = 0; i < FRAMEBUFFER_SIZE; i++)
-   {
-      g_FrameBuffer[i]                                   = 0x00000000;
-   }
+   lcd_log_Init(g_FrameBuffer, RK043FN48H_WIDTH, RK043FN48H_HEIGHT, LTDC_PIXEL_FORMAT_ARGB8888);
 
    /*Configure GPIO pin : PI1, D1 */
    GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
@@ -139,30 +147,13 @@ int main(void)
 
    while (1)
    {
-      debug_output_debug("Blue !!! \r\n");
-      for (i = 0; i < FRAMEBUFFER_SIZE; i++)
-      {
-         g_FrameBuffer[i]                                = 0x000000FF;
-      }
+      debug_output_debug("toggle pin !!!\r\n");
       HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
       HAL_Delay(1000);
 
-      debug_output_debug("Green !!! \r\n");
-      for (i = 0; i < FRAMEBUFFER_SIZE; i++)
-      {
-         g_FrameBuffer[i]                                = 0x0000FF00;
-      }
+      debug_output_debug("----\r\n");
       HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
       HAL_Delay(1000);
-
-      debug_output_debug("Red !!! \r\n");
-      for (i = 0; i < FRAMEBUFFER_SIZE; i++)
-      {
-         g_FrameBuffer[i]                                = 0x00FF0000;
-      }
-      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
-      HAL_Delay(1000);
-
    }
 }
 
@@ -374,6 +365,79 @@ static void MX_LTDC_Init(void)
 
 }
 
+/* --------------------------------------------------------------------------
+ * Name : MX_DMA2D_Init()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+static void MX_DMA_Init(void)
+{
+   /* DMA controller clock enable */
+   __HAL_RCC_DMA2_CLK_ENABLE();
+
+   /* Configure DMA request hdma_memtomem_dma2_stream0 on DMA2_Stream0 */
+   hdma_memtomem_dma2_stream0.Instance                   = DMA2_Stream0;
+   hdma_memtomem_dma2_stream0.Init.Channel               = DMA_CHANNEL_0;
+   hdma_memtomem_dma2_stream0.Init.Direction             = DMA_MEMORY_TO_MEMORY;
+   hdma_memtomem_dma2_stream0.Init.PeriphInc             = DMA_PINC_ENABLE;
+   hdma_memtomem_dma2_stream0.Init.MemInc                = DMA_MINC_ENABLE;
+   hdma_memtomem_dma2_stream0.Init.PeriphDataAlignment   = DMA_PDATAALIGN_BYTE;
+   hdma_memtomem_dma2_stream0.Init.MemDataAlignment      = DMA_MDATAALIGN_BYTE;
+   hdma_memtomem_dma2_stream0.Init.Mode                  = DMA_NORMAL;
+   hdma_memtomem_dma2_stream0.Init.Priority              = DMA_PRIORITY_LOW;
+   hdma_memtomem_dma2_stream0.Init.FIFOMode              = DMA_FIFOMODE_ENABLE;
+   hdma_memtomem_dma2_stream0.Init.FIFOThreshold         = DMA_FIFO_THRESHOLD_FULL;
+   hdma_memtomem_dma2_stream0.Init.MemBurst              = DMA_MBURST_SINGLE;
+   hdma_memtomem_dma2_stream0.Init.PeriphBurst           = DMA_PBURST_SINGLE;
+   if (HAL_DMA_Init(&hdma_memtomem_dma2_stream0) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+}
+
+/* --------------------------------------------------------------------------
+ * Name : MX_DMA2D_Init()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+static void MX_DMA2D_Init(void)
+{
+   hdma2d.Instance                                       = DMA2D;
+   hdma2d.Init.Mode                                      = DMA2D_M2M;
+   hdma2d.Init.ColorMode                                 = DMA2D_OUTPUT_ARGB8888;
+   hdma2d.Init.OutputOffset                              = 0;
+   hdma2d.LayerCfg[1].InputOffset                        = 0;
+   hdma2d.LayerCfg[1].InputColorMode                     = DMA2D_INPUT_ARGB8888;
+   hdma2d.LayerCfg[1].AlphaMode                          = DMA2D_NO_MODIF_ALPHA;
+   hdma2d.LayerCfg[1].InputAlpha                         = 0;
+   if (HAL_DMA2D_Init(&hdma2d) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   if (HAL_DMA2D_ConfigLayer(&hdma2d, 1) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+}
+
+/* --------------------------------------------------------------------------
+ * Name : MX_DMA2D_LCD_Clear()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void MX_DMA2D_LCD_Clear(void)
+{
+   if (HAL_DMA2D_Start(&hdma2d, 0x00000000, (uint32_t) g_FrameBuffer, RK043FN48H_WIDTH, RK043FN48H_HEIGHT) == HAL_OK)
+   {
+      /* Polling For DMA transfer */  
+      HAL_DMA2D_PollForTransfer(&hdma2d, 10);
+   }
+   else
+   {
+      debug_output_info("MX_DMA2D_LCD_Clear() failed !!! \r\n");
+   }
+}
 
 /* --------------------------------------------------------------------------
  * Name : BSP_SDRAM_Initialization_sequence()
