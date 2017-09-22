@@ -231,7 +231,11 @@ void lcd_log_Init(volatile uint32_t* pframebuffer, uint32_t width, uint32_t heig
    g_height                                              = height;
    g_pixel_fmt                                           = pixel_fmt;
 
+#if 0
+   g_lcd_log_font_info.font_info                         = &Font8;
+#else
    g_lcd_log_font_info.font_info                         = &Font12;
+#endif
    g_lcd_log_font_info.f_color                           = 0xFFFFFF;
    g_lcd_log_font_info.b_color                           = 0x000000;
 

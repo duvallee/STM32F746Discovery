@@ -41,6 +41,8 @@
 #include "stm32f7xx_hal.h"
 #include "debug_output.h"
 #include "lcd_log.h"
+#include "touch_ft5536.h"
+#include "software_timer.h"
 
 // #define USE_CLOCK_INTERNAL
 
@@ -70,14 +72,32 @@ volatile uint32_t *g_FrameBuffer                         = (uint32_t *) 0xC07800
  *
  *
  * -------------------------------------------------------------------------- */
+static uint8_t g_start_log                               = 0;
 int _putc(unsigned char ch)
 {
+   if (g_start_log == 0)
+   {
+      return -1;
+   }
    draw_char(ch);
    if (HAL_UART_Transmit(&huart6, (uint8_t *) &ch, sizeof(ch), 0xFFFF) == HAL_OK)
    {
       return 0;
    }
    return -1;
+}
+
+/* --------------------------------------------------------------------------
+ * Name : HAL_GPIO_EXTI_Callback()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+   if (GPIO_Pin == GPIO_PIN_13)
+   {
+      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
+   }
 }
 
 /* Private function prototypes -----------------------------------------------*/
@@ -97,8 +117,6 @@ static void MX_TIM6_Init(void);
  * -------------------------------------------------------------------------- */
 int main(void)
 {
-   GPIO_InitTypeDef GPIO_InitStruct;
-
    HAL_Init();
    SystemClock_Config();
 
@@ -110,50 +128,33 @@ int main(void)
    MX_LTDC_Init();
    MX_DMA2D_Init();
 
+   // init lcd log
    lcd_log_Init(g_FrameBuffer, RK043FN48H_WIDTH, RK043FN48H_HEIGHT, LTDC_PIXEL_FORMAT_ARGB8888);
+   g_start_log                                           = 1;
 
-   /*Configure GPIO pin : PI1, D1 */
-   GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
-   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
-   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
-   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
-   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+   // --------------------------------------------------------------------------
+   // init software timer
+   init_software_timer();
 
-   /*Configure GPIO pin : PK3, backlight on */
-   GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
-   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
-   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
-   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
-   HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
-
-   /*Configure GPIO pin : PI1, D1
-     Configure GPIO pin : PI12, Display on */
-   GPIO_InitStruct.Pin                                   = GPIO_PIN_1 | GPIO_PIN_12;
-   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
-   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
-   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
-   HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
-
-   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_RESET);     // Display off
-   HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_RESET);      // Backlight off
-
+   // --------------------------------------------------------------------------
    debug_output_info("===================================================== \r\n");
    debug_output_info("BUILD   : %s %s \r\n", __DATE__, __TIME__);
    debug_output_info("VERSION : ver0.1.4 \r\n");
    debug_output_info("===================================================== \r\n");
 
+   // init touch driver
+   touch_init();
+
+   // --------------------------------------------------------------------------
    HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_SET);     // Display on
    HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_SET);      // Backlight on
 
+   // add timer for touch
+   add_software_timer(touch_polling, 50, -1, 0);
+
    while (1)
    {
-      debug_output_debug("toggle pin !!!\r\n");
-      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
-      HAL_Delay(1000);
-
-      debug_output_debug("----\r\n");
-      HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
-      HAL_Delay(1000);
+      proc_software_timer();
    }
 }
 
@@ -570,15 +571,58 @@ static void MX_FMC_Init(void)
 */
 static void MX_GPIO_Init(void)
 {
-   /* GPIO Ports Clock Enable */
+   GPIO_InitTypeDef GPIO_InitStruct;
+
+   // GPIO Ports Clock Enable
    __HAL_RCC_GPIOA_CLK_ENABLE();
    __HAL_RCC_GPIOB_CLK_ENABLE();
    __HAL_RCC_GPIOC_CLK_ENABLE();
    __HAL_RCC_GPIOD_CLK_ENABLE();
+   __HAL_RCC_GPIOE_CLK_ENABLE();
+   __HAL_RCC_GPIOF_CLK_ENABLE();
    __HAL_RCC_GPIOG_CLK_ENABLE();
    __HAL_RCC_GPIOH_CLK_ENABLE();
    __HAL_RCC_GPIOI_CLK_ENABLE();
+   __HAL_RCC_GPIOJ_CLK_ENABLE();
    __HAL_RCC_GPIOK_CLK_ENABLE();
+
+   // Configure GPIO pin : PI1, D1
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+   // Configure GPIO pin : PK3, backlight on
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
+
+   // Configure GPIO pin : PI1, D1
+   // Configure GPIO pin : PI12, Display on
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_1 | GPIO_PIN_12;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+
+   // Configure GPIO pin : PI13 (Touch IC IRQ)
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_13;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_IT_RISING;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
+
+   // lcd & backlight off
+   HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_RESET);     // Display off
+   HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_RESET);      // Backlight off
+
+   // EXTI interrupt init for PI13 (EXTI 13)
+   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
+   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
 }
 
 /* --------------------------------------------------------------------------
@@ -643,14 +687,14 @@ static void MX_USART6_UART_Init(void)
   * @param  None
   * @retval None
   */
-void _Error_Handler(char * file, int line)
+void _Error_Handler(char* file, int line)
 {
-   /* USER CODE BEGIN Error_Handler_Debug */
-   /* User can add his own implementation to report the HAL error return state */
+   debug_output_error("******************************************************** \r\n");
+   debug_output_error("%s - %d \r\n", file, line);
+   debug_output_error("******************************************************** \r\n");
    while(1) 
    {
    }
-   /* USER CODE END Error_Handler_Debug */ 
 }
 
 #ifdef USE_FULL_ASSERT

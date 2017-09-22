@@ -59,16 +59,8 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pwr_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_cortex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_uart.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_usart.c \
-Src/system_stm32f7xx.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_i2c.c \
-Src/main.c \
-Src/stm32f7xx_it.c \
-Src/common/printf.c \
-Src/font8.c \
-Src/font12.c \
-Src/font16.c \
-Src/lcd_log.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_gpio.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma_ex.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_flash.c \
@@ -77,7 +69,18 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sdram.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c \
-Src/stm32f7xx_hal_msp.c
+Src/main.c \
+Src/system_stm32f7xx.c \
+Src/stm32f7xx_hal_msp.c \
+Src/stm32f7xx_it.c \
+Src/common/printf.c \
+Src/common/lcd_log.c \
+Src/common/software_timer.c \
+Src/font/font8.c \
+Src/font/font12.c \
+Src/font/font16.c \
+Src/driver/touch/touch_ft5536.c	\
+# end of source
 
 # ASM sources
 ASM_SOURCES =  \

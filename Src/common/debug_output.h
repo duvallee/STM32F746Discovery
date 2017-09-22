@@ -14,6 +14,7 @@ Copyright (c) duvallee
 #define DEBUG_STRING_LEVEL_DEBUG
 #define DEBUG_STRING_LEVEL_FN_TRACE
 #define DEBUG_STRING_LEVEL_INFO
+#define DEBUG_STRING_LEVEL_DUMP
 
 #if defined(DEBUG_STRING_LEVEL_ERROR)
 #define debug_output_error(fmt, ...)                                             \
@@ -83,6 +84,13 @@ Copyright (c) duvallee
                                              /* end of ... */
 #else
 #define debug_output_info(fmt, ...)          asm("nop")
+#endif
+
+
+#if defined(DEBUG_STRING_LEVEL_DUMP)
+#define debug_output_dump(fmt, ...)          printf(fmt, ##__VA_ARGS__)
+#else
+#define debug_output_dump(fmt, ...)          asm("nop")
 #endif
 
 

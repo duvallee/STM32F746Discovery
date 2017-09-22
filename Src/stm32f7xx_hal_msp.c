@@ -284,6 +284,11 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc)
    HAL_NVIC_EnableIRQ(LTDC_IRQn);
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_LTDC_MspDeInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* hltdc)
 {
    /* Reset peripherals */
@@ -294,6 +299,11 @@ void HAL_LTDC_MspDeInit(LTDC_HandleTypeDef* hltdc)
    __HAL_RCC_LTDC_RELEASE_RESET();
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_DMA2D_MspInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_DMA2D_MspInit(DMA2D_HandleTypeDef* hdma2d)
 {
    if(hdma2d->Instance==DMA2D)
@@ -303,6 +313,11 @@ void HAL_DMA2D_MspInit(DMA2D_HandleTypeDef* hdma2d)
    }
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_DMA2D_MspDeInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef* hdma2d)
 {
    if(hdma2d->Instance==DMA2D)
@@ -312,6 +327,11 @@ void HAL_DMA2D_MspDeInit(DMA2D_HandleTypeDef* hdma2d)
    }
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_TIM_Base_MspInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
 {
    if(htim_base->Instance==TIM6)
@@ -321,6 +341,11 @@ void HAL_TIM_Base_MspInit(TIM_HandleTypeDef* htim_base)
    }
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_TIM_Base_MspDeInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
 {
    if(htim_base->Instance==TIM6)
@@ -330,6 +355,11 @@ void HAL_TIM_Base_MspDeInit(TIM_HandleTypeDef* htim_base)
    }
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_UART_MspInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_UART_MspInit(UART_HandleTypeDef* huart)
 {
 
@@ -352,6 +382,11 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   }
 }
 
+/* --------------------------------------------------------------------------
+ * Name : HAL_UART_MspDeInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
 void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 {
    if(huart->Instance==USART6)
@@ -364,6 +399,52 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
       PC7     ------> USART6_RX 
       */
       HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
+   }
+}
+
+/* --------------------------------------------------------------------------
+ * Name : HAL_I2C_MspInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
+void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
+{
+   GPIO_InitTypeDef GPIO_InitStruct;
+   if (hi2c->Instance == I2C3)
+   {
+      /**I2C3 GPIO Configuration    
+      PH7     ------> I2C3_SCL
+      PH8     ------> I2C3_SDA 
+      */
+      GPIO_InitStruct.Pin                                = GPIO_PIN_7 | GPIO_PIN_8;
+      GPIO_InitStruct.Mode                               = GPIO_MODE_AF_OD;
+      GPIO_InitStruct.Pull                               = GPIO_PULLUP;
+      GPIO_InitStruct.Speed                              = GPIO_SPEED_FREQ_VERY_HIGH;
+      GPIO_InitStruct.Alternate                          = GPIO_AF4_I2C3;
+      HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+
+      /* Peripheral clock enable */
+      __HAL_RCC_I2C3_CLK_ENABLE();
+   }
+}
+
+/* --------------------------------------------------------------------------
+ * Name : HAL_I2C_MspDeInit()
+ *        
+ *
+ * -------------------------------------------------------------------------- */
+void HAL_I2C_MspDeInit(I2C_HandleTypeDef* hi2c)
+{
+   if (hi2c->Instance == I2C3)
+   {
+      /* Peripheral clock disable */
+      __HAL_RCC_I2C3_CLK_DISABLE();
+
+      /**I2C3 GPIO Configuration    
+      PH7     ------> I2C3_SCL
+      PH8     ------> I2C3_SDA 
+      */
+      HAL_GPIO_DeInit(GPIOH, GPIO_PIN_7 | GPIO_PIN_8);
    }
 }
 
