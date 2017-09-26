@@ -53,6 +53,8 @@ LTDC_HandleTypeDef hltdc;
 DMA2D_HandleTypeDef hdma2d;
 SDRAM_HandleTypeDef hsdram1;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
+TIM_HandleTypeDef htim1;
+TIM_HandleTypeDef htim12;
 
 #define MILLI_SECOND                                     1000
 volatile uint32_t g_System_Start_Second                  = 0;
@@ -109,6 +111,62 @@ static void MX_DMA_Init(void);
 static void MX_FMC_Init(void);
 static void MX_USART6_UART_Init(void);
 static void MX_TIM6_Init(void);
+static void MX_TIM1_Init(void);
+static void MX_TIM12_Init(void);
+
+
+/* --------------------------------------------------------------------------
+ * Name : test_servo_timer1()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void test_servo_timer1(void* pData)
+{
+   TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) pData;
+static uint8_t step                                      = 0;
+
+   if (step == 0)
+   {
+      pTimer1->Instance->ARR                             = 20000;
+      pTimer1->Instance->CCR1                            = 5000;
+      step                                               = 180;
+      debug_output_info("180 \r\n");
+   }
+   else
+   {
+      pTimer1->Instance->ARR                             = 20000;
+      pTimer1->Instance->CCR1                            = 700;
+      step                                               = 0;
+      debug_output_info("0 \r\n");
+   }
+}
+
+/* --------------------------------------------------------------------------
+ * Name : test_servo_timer12()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void test_servo_timer12(void* pData)
+{
+   TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) pData;
+static uint8_t step                                      = 0;
+
+   if (step == 0)
+   {
+      pTimer1->Instance->ARR                             = 20000;
+      pTimer1->Instance->CCR1                            = 5000;
+      step                                               = 180;
+      debug_output_info("180 \r\n");
+   }
+   else
+   {
+      pTimer1->Instance->ARR                             = 20000;
+      pTimer1->Instance->CCR1                            = 700;
+      step                                               = 0;
+      debug_output_info("0 \r\n");
+   }
+}
+
 
 /* --------------------------------------------------------------------------
  * Name : main()
@@ -127,6 +185,8 @@ int main(void)
    MX_TIM6_Init();
    MX_LTDC_Init();
    MX_DMA2D_Init();
+   MX_TIM1_Init();
+   MX_TIM12_Init();
 
    // init lcd log
    lcd_log_Init(g_FrameBuffer, RK043FN48H_WIDTH, RK043FN48H_HEIGHT, LTDC_PIXEL_FORMAT_ARGB8888);
@@ -149,8 +209,18 @@ int main(void)
    HAL_GPIO_WritePin(GPIOI, GPIO_PIN_12, GPIO_PIN_SET);     // Display on
    HAL_GPIO_WritePin(GPIOK, GPIO_PIN_3, GPIO_PIN_SET);      // Backlight on
 
+   // --------------------------------------------------------------------------
+   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
+   HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
+
+
+   // --------------------------------------------------------------------------
    // add timer for touch
    add_software_timer(touch_polling, 50, -1, 0);
+
+   // add timer for servo
+   add_software_timer(test_servo_timer1, 1000, -1, (void*) &htim1);
+   add_software_timer(test_servo_timer12, 1000, -1, (void*) &htim12);
 
    while (1)
    {
@@ -633,6 +703,7 @@ static void MX_GPIO_Init(void)
 /* TIM6 init function */
 static void MX_TIM6_Init(void)
 {
+#if 0
    TIM_MasterConfigTypeDef sMasterConfig;
 
    htim6.Instance                                        = TIM6;
@@ -651,7 +722,7 @@ static void MX_TIM6_Init(void)
    {
       _Error_Handler(__FILE__, __LINE__);
    }
-
+#endif
 }
 
 /* --------------------------------------------------------------------------
@@ -676,6 +747,147 @@ static void MX_USART6_UART_Init(void)
       _Error_Handler(__FILE__, __LINE__);
    }
 }
+
+/* --------------------------------------------------------------------------
+ * Name : MX_TIM1_Init()
+ *        TIM1 init function
+ *
+ * -------------------------------------------------------------------------- */
+static void MX_TIM1_Init(void)
+{
+   TIM_ClockConfigTypeDef sClockSourceConfig;
+   TIM_MasterConfigTypeDef sMasterConfig;
+   TIM_OC_InitTypeDef sConfigOC;
+   TIM_BreakDeadTimeConfigTypeDef sBreakDeadTimeConfig;
+   GPIO_InitTypeDef GPIO_InitStruct;
+
+   htim1.Instance                                        = TIM1;
+   // 1 us = 1 / (100 MHz / 100)
+   htim1.Init.Prescaler                                  = 100;
+   htim1.Init.CounterMode                                = TIM_COUNTERMODE_UP;
+   // 20 ms
+   htim1.Init.Period                                     = 20000;
+   htim1.Init.ClockDivision                              = TIM_CLOCKDIVISION_DIV1;
+   htim1.Init.RepetitionCounter                          = 0;
+   htim1.Init.AutoReloadPreload                          = TIM_AUTORELOAD_PRELOAD_DISABLE;
+   if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sClockSourceConfig.ClockSource                        = TIM_CLOCKSOURCE_INTERNAL;
+   if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   if (HAL_TIM_PWM_Init(&htim1) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sMasterConfig.MasterOutputTrigger                     = TIM_TRGO_RESET;
+   sMasterConfig.MasterOutputTrigger2                    = TIM_TRGO2_RESET;
+   sMasterConfig.MasterSlaveMode                         = TIM_MASTERSLAVEMODE_DISABLE;
+   if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sConfigOC.OCMode                                      = TIM_OCMODE_PWM1;
+   sConfigOC.Pulse                                       = 700;
+   sConfigOC.OCPolarity                                  = TIM_OCPOLARITY_HIGH;
+   sConfigOC.OCNPolarity                                 = TIM_OCNPOLARITY_HIGH;
+   sConfigOC.OCFastMode                                  = TIM_OCFAST_DISABLE;
+   sConfigOC.OCIdleState                                 = TIM_OCIDLESTATE_RESET;
+   sConfigOC.OCNIdleState                                = TIM_OCNIDLESTATE_RESET;
+   if (HAL_TIM_PWM_ConfigChannel(&htim1, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sBreakDeadTimeConfig.OffStateRunMode                  = TIM_OSSR_DISABLE;
+   sBreakDeadTimeConfig.OffStateIDLEMode                 = TIM_OSSI_DISABLE;
+   sBreakDeadTimeConfig.LockLevel                        = TIM_LOCKLEVEL_OFF;
+   sBreakDeadTimeConfig.DeadTime                         = 0;
+   sBreakDeadTimeConfig.BreakState                       = TIM_BREAK_DISABLE;
+   sBreakDeadTimeConfig.BreakPolarity                    = TIM_BREAKPOLARITY_HIGH;
+   sBreakDeadTimeConfig.BreakFilter                      = 0;
+   sBreakDeadTimeConfig.Break2State                      = TIM_BREAK2_DISABLE;
+   sBreakDeadTimeConfig.Break2Polarity                   = TIM_BREAK2POLARITY_HIGH;
+   sBreakDeadTimeConfig.Break2Filter                     = 0;
+   sBreakDeadTimeConfig.AutomaticOutput                  = TIM_AUTOMATICOUTPUT_DISABLE;
+   if (HAL_TIMEx_ConfigBreakDeadTime(&htim1, &sBreakDeadTimeConfig) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   /**TIM1 GPIO Configuration    
+   PA8     ------> TIM1_CH1 
+   */
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_8;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_AF_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   GPIO_InitStruct.Alternate                             = GPIO_AF1_TIM1;
+   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+}
+
+/* --------------------------------------------------------------------------
+ * Name : TIM12 init function()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+static void MX_TIM12_Init(void)
+{
+   TIM_ClockConfigTypeDef sClockSourceConfig;
+   TIM_OC_InitTypeDef sConfigOC;
+   GPIO_InitTypeDef GPIO_InitStruct;
+
+   htim12.Instance                                       = TIM12;
+   // 1 us = 1 / (54 MHz / 54)
+   htim12.Init.Prescaler                                 = 54;
+   htim12.Init.CounterMode                               = TIM_COUNTERMODE_UP;
+   // 20 ms
+   htim12.Init.Period                                    = 20000;
+   htim12.Init.ClockDivision                             = TIM_CLOCKDIVISION_DIV1;
+   htim12.Init.AutoReloadPreload                         = TIM_AUTORELOAD_PRELOAD_DISABLE;
+   if (HAL_TIM_Base_Init(&htim12) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sClockSourceConfig.ClockSource                        = TIM_CLOCKSOURCE_INTERNAL;
+   if (HAL_TIM_ConfigClockSource(&htim12, &sClockSourceConfig) != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
+   if (HAL_TIM_PWM_Init(&htim12) != HAL_OK)
+   {
+    _Error_Handler(__FILE__, __LINE__);
+   }
+
+   sConfigOC.OCMode                                      = TIM_OCMODE_PWM1;
+   sConfigOC.Pulse                                       = 700;
+   sConfigOC.OCPolarity                                  = TIM_OCPOLARITY_HIGH;
+   sConfigOC.OCFastMode                                  = TIM_OCFAST_DISABLE;
+   if (HAL_TIM_PWM_ConfigChannel(&htim12, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+   {
+       _Error_Handler(__FILE__, __LINE__);
+   }
+
+   /**TIM12 GPIO Configuration    
+   PH6     ------> TIM12_CH1 
+   */
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_6;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_AF_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   GPIO_InitStruct.Alternate                             = GPIO_AF9_TIM12;
+   HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
+}
+
 
 /* --------------------------------------------------------------------------
  * Name : _Error_Handler()
