@@ -69,6 +69,16 @@ Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_ltdc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sdram.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_fmc.c \
 Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_dma2d.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1/port.c \
+Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
+Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.c \
+Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+Middlewares/Third_Party/FreeRTOS/Source/queue.c \
+Middlewares/Third_Party/FreeRTOS/Source/event_groups.c \
+Middlewares/Third_Party/FreeRTOS/Source/croutine.c \
+Middlewares/Third_Party/FreeRTOS/Source/list.c \
+Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c	\
+Src/freertos.c \
 Src/main.c \
 Src/system_stm32f7xx.c \
 Src/stm32f7xx_hal_msp.c \
@@ -141,7 +151,11 @@ C_INCLUDES =  \
 -IDrivers/STM32F7xx_HAL_Driver/Inc \
 -IDrivers/STM32F7xx_HAL_Driver/Inc/Legacy \
 -IDrivers/CMSIS/Device/ST/STM32F7xx/Include \
--IDrivers/CMSIS/Include
+-IDrivers/CMSIS/Include \
+-IMiddlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1 \
+-IMiddlewares/Third_Party/FreeRTOS/Source/include \
+-IMiddlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS \
+# end of include
 
 
 # compile gcc flags

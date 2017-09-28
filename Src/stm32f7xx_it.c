@@ -34,6 +34,8 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_it.h"
+#include "cmsis_os.h"
+
 
 /* External variables --------------------------------------------------------*/
 
@@ -91,12 +93,14 @@ void UsageFault_Handler(void)
    }
 }
 
+#if 0    // move to the FreeRTOS
 /**
 * @brief This function handles System service call via SWI instruction.
 */
 void SVC_Handler(void)
 {
 }
+#endif
 
 /**
 * @brief This function handles Debug monitor.
@@ -105,12 +109,14 @@ void DebugMon_Handler(void)
 {
 }
 
+#if 0    // move to the FreeRTOS
 /**
 * @brief This function handles Pendable request for system service.
 */
 void PendSV_Handler(void)
 {
 }
+#endif
 
 /**
 * @brief This function handles System tick timer.
@@ -120,6 +126,8 @@ void SysTick_Handler(void)
 {
    HAL_IncTick();
    HAL_SYSTICK_IRQHandler();
+
+   osSystickHandler();
 }
 
 /**

@@ -43,6 +43,8 @@
 #include "lcd_log.h"
 #include "touch_ft5536.h"
 #include "software_timer.h"
+#include "cmsis_os.h"
+
 
 // #define USE_CLOCK_INTERNAL
 
@@ -115,6 +117,76 @@ static void MX_TIM1_Init(void);
 static void MX_TIM12_Init(void);
 
 
+#if 1
+
+/* --------------------------------------------------------------------------
+ * Name : test_servo_1_task()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void test_servo_1_task(void* argument)
+{
+   TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) argument;
+   uint8_t step                                          = 0;
+
+   debug_output_info("start !!! \r\n");
+   while (1)
+   {
+      debug_output_info("idle \r\n");
+      if (step == 0)
+      {
+         pTimer1->Instance->ARR                          = 20000;
+         pTimer1->Instance->CCR1                         = 5000;
+         step                                            = 180;
+         debug_output_info("180 \r\n");
+      }
+      else
+      {
+         pTimer1->Instance->ARR                          = 20000;
+         pTimer1->Instance->CCR1                         = 700;
+         step                                            = 0;
+         debug_output_info("0 \r\n");
+      }
+      osDelay(1000);
+   }
+   vTaskDelete(NULL);
+}
+
+/* --------------------------------------------------------------------------
+ * Name : test_servo_2_task()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void test_servo_2_task(void* argument)
+{
+   TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) argument;
+   uint8_t step                                          = 0;
+
+   debug_output_info("start !!! \r\n");
+   while (1)
+   {
+      debug_output_info("idle \r\n");
+      if (step == 0)
+      {
+         pTimer1->Instance->ARR                             = 20000;
+         pTimer1->Instance->CCR1                            = 5000;
+         step                                               = 180;
+         debug_output_info("180 \r\n");
+      }
+      else
+      {
+         pTimer1->Instance->ARR                             = 20000;
+         pTimer1->Instance->CCR1                            = 700;
+         step                                               = 0;
+         debug_output_info("0 \r\n");
+      }
+      osDelay(1000);
+   }
+   vTaskDelete(NULL);
+}
+
+
+#else
 /* --------------------------------------------------------------------------
  * Name : test_servo_timer1()
  *
@@ -166,7 +238,7 @@ static uint8_t step                                      = 0;
       debug_output_info("0 \r\n");
    }
 }
-
+#endif
 
 /* --------------------------------------------------------------------------
  * Name : main()
@@ -213,7 +285,14 @@ int main(void)
    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
 
+#if 1
+   xTaskCreate(test_servo_1_task, "servo motor task 1", 1000, (void *) &htim1, 1, NULL);
+   xTaskCreate(test_servo_2_task, "servo motor task 2", 1000, (void *) &htim12, 1, NULL);
 
+   /* Start scheduler */
+   osKernelStart();
+
+#else
    // --------------------------------------------------------------------------
    // add timer for touch
    add_software_timer(touch_polling, 50, -1, 0);
@@ -226,6 +305,7 @@ int main(void)
    {
       proc_software_timer();
    }
+#endif
 }
 
 
