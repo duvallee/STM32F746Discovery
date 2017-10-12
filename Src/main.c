@@ -67,6 +67,15 @@ volatile uint16_t g_System_Start_Milli_Second            = 0;
 volatile uint32_t *g_DMA2D_FrameBuffer                   = (uint32_t *) 0xC0700000;
 volatile uint32_t *g_FrameBuffer                         = (uint32_t *) 0xC0780000;
 
+
+#if ( configAPPLICATION_ALLOCATED_HEAP == 1 )
+#if 0
+uint8_t* ucHeap                                          = (uint8_t *) 0xC0000000;
+#else
+uint8_t ucHeap[configTOTAL_HEAP_SIZE]                    = {0, };
+#endif
+#endif
+
 // 522,240, 0x7F800, x2 = 0xFF000, 1044,480
 // volatile uint16_t g_FrameBuffer[FRAMEBUFFER_SIZE];
 
@@ -132,6 +141,11 @@ void test_servo_1_task(void* argument)
    debug_output_info("start !!! \r\n");
    while (1)
    {
+#if 0
+//      HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+      HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_6);
+      osDelay(100);
+#else
       debug_output_info("idle \r\n");
       if (step == 0)
       {
@@ -147,7 +161,8 @@ void test_servo_1_task(void* argument)
          step                                            = 0;
          debug_output_info("0 \r\n");
       }
-      osDelay(1000);
+      osDelay(10000);
+#endif
    }
    vTaskDelete(NULL);
 }
@@ -166,6 +181,7 @@ void test_servo_2_task(void* argument)
    while (1)
    {
       debug_output_info("idle \r\n");
+#if 1
       if (step == 0)
       {
          pTimer1->Instance->ARR                             = 20000;
@@ -180,7 +196,8 @@ void test_servo_2_task(void* argument)
          step                                               = 0;
          debug_output_info("0 \r\n");
       }
-      osDelay(1000);
+#endif
+      osDelay(10000);
    }
    vTaskDelete(NULL);
 }
@@ -241,12 +258,32 @@ static uint8_t step                                      = 0;
 #endif
 
 /* --------------------------------------------------------------------------
+ * Name : CPU_CACHE_Enable()
+ *        CPU L1-Cache enable.
+ *
+ * -------------------------------------------------------------------------- */
+static void CPU_CACHE_Enable(void)
+{
+   /* Enable branch prediction */
+   SCB->CCR                                              |= (1 << 18); 
+   __DSB();
+
+   /* Enable I-Cache */
+   SCB_EnableICache();	
+
+   /* Enable D-Cache */
+   SCB_EnableDCache();
+}
+
+/* --------------------------------------------------------------------------
  * Name : main()
  *
  *
  * -------------------------------------------------------------------------- */
 int main(void)
 {
+   CPU_CACHE_Enable();
+
    HAL_Init();
    SystemClock_Config();
 
@@ -772,6 +809,15 @@ static void MX_GPIO_Init(void)
    // EXTI interrupt init for PI13 (EXTI 13)
    HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
    HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
+   // Configure GPIO pin : PG6 for test
+   // Configure GPIO pin : Arduino CN4 - pin 3
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_6;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_NOPULL;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
+   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
 
 }
 
