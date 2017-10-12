@@ -133,7 +133,7 @@ static void MX_TIM12_Init(void);
  *
  *
  * -------------------------------------------------------------------------- */
-void test_servo_1_task(void* argument)
+void test_servo_1_task(void const * argument)
 {
    TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) argument;
    uint8_t step                                          = 0;
@@ -172,7 +172,7 @@ void test_servo_1_task(void* argument)
  *
  *
  * -------------------------------------------------------------------------- */
-void test_servo_2_task(void* argument)
+void test_servo_2_task(void const * argument)
 {
    TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) argument;
    uint8_t step                                          = 0;
@@ -259,6 +259,39 @@ static uint8_t step                                      = 0;
 
 /* --------------------------------------------------------------------------
  * Name : CPU_CACHE_Enable()
+ *        Configure the MPU attributes as Device for  Ethernet Descriptors in the SRAM1.
+ *        The Base Address is 0x20010000 since this memory interface is the AXI.
+ *        The Configured Region Size is 256B (size of Rx and Tx ETH descriptors) 
+ *
+ * -------------------------------------------------------------------------- */
+static void MPU_Config(void)
+{
+   MPU_Region_InitTypeDef MPU_InitStruct;
+
+   /* Disable the MPU */
+   HAL_MPU_Disable();
+
+   /* Configure the MPU attributes as Device for Ethernet Descriptors in the SRAM */
+   MPU_InitStruct.Enable                                 = MPU_REGION_ENABLE;
+   MPU_InitStruct.BaseAddress                            = 0x20010000;
+   MPU_InitStruct.Size                                   = MPU_REGION_SIZE_256B;
+   MPU_InitStruct.AccessPermission                       = MPU_REGION_FULL_ACCESS;
+   MPU_InitStruct.IsBufferable                           = MPU_ACCESS_BUFFERABLE;
+   MPU_InitStruct.IsCacheable                            = MPU_ACCESS_NOT_CACHEABLE;
+   MPU_InitStruct.IsShareable                            = MPU_ACCESS_SHAREABLE;
+   MPU_InitStruct.Number                                 = MPU_REGION_NUMBER0;
+   MPU_InitStruct.TypeExtField                           = MPU_TEX_LEVEL0;
+   MPU_InitStruct.SubRegionDisable                       = 0x00;
+   MPU_InitStruct.DisableExec                            = MPU_INSTRUCTION_ACCESS_ENABLE;
+
+   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
+   /* Enable the MPU */
+   HAL_MPU_Enable(MPU_PRIVILEGED_DEFAULT);
+}
+
+/* --------------------------------------------------------------------------
+ * Name : CPU_CACHE_Enable()
  *        CPU L1-Cache enable.
  *
  * -------------------------------------------------------------------------- */
@@ -282,6 +315,7 @@ static void CPU_CACHE_Enable(void)
  * -------------------------------------------------------------------------- */
 int main(void)
 {
+   MPU_Config();
    CPU_CACHE_Enable();
 
    HAL_Init();
@@ -322,6 +356,24 @@ int main(void)
    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
 
+
+#if 1
+   /* Thread 1 definition */
+   osThreadDef(servo_task_1, test_servo_1_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
+   osThreadDef(servo_task_2, test_servo_2_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
+
+// osThreadDef_t
+   /* Start thread 1 */
+   osThreadCreate(osThread(servo_task_1), (void *) &htim1);
+
+   /* Start thread 2 */
+   osThreadCreate(osThread(servo_task_2), (void *) &htim12);
+
+   /* Start scheduler */
+   osKernelStart();
+
+   for(;;);
+#else
 #if 1
    xTaskCreate(test_servo_1_task, "servo motor task 1", 1000, (void *) &htim1, 1, NULL);
    xTaskCreate(test_servo_2_task, "servo motor task 2", 1000, (void *) &htim12, 1, NULL);
@@ -342,6 +394,7 @@ int main(void)
    {
       proc_software_timer();
    }
+#endif
 #endif
 }
 
