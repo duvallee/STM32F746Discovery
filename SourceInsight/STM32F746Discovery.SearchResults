@@ -1,6 +1,11 @@
----- touch_start Matches (5 in 2 files) ----
-Touch_ft5536.c (src\driver\touch): * Name : touch_start()
-Touch_ft5536.c (src\driver\touch):void touch_start(uint8_t trigger_mode)
-Touch_ft5536.c (src\driver\touch):      debug_output_error("touch_start() Failed \r\n");
-Touch_ft5536.c (src\driver\touch): * Name : touch_start()
-Touch_ft5536.h (inc):void touch_start(uint8_t trigger_mode);
+---- configAPPLICATION_ALLOCATED_HEAP Matches (10 in 6 files) ----
+FreeRTOS.h (middlewares\third_party\freertos\source\include):#ifndef configAPPLICATION_ALLOCATED_HEAP
+FreeRTOS.h (middlewares\third_party\freertos\source\include):	#define configAPPLICATION_ALLOCATED_HEAP 0
+FreeRTOSConfig.h (inc):#define configAPPLICATION_ALLOCATED_HEAP                 1
+Heap_1.c (middlewares\third_party\freertos\source\portable\memmang):#if( configAPPLICATION_ALLOCATED_HEAP == 1 )
+Heap_1.c (middlewares\third_party\freertos\source\portable\memmang):#endif /* configAPPLICATION_ALLOCATED_HEAP */
+Heap_2.c (middlewares\third_party\freertos\source\portable\memmang):#if( configAPPLICATION_ALLOCATED_HEAP == 1 )
+Heap_2.c (middlewares\third_party\freertos\source\portable\memmang):#endif /* configAPPLICATION_ALLOCATED_HEAP */
+Heap_4.c (middlewares\third_party\freertos\source\portable\memmang):#if( configAPPLICATION_ALLOCATED_HEAP == 1 )
+Heap_4.c (middlewares\third_party\freertos\source\portable\memmang):#endif /* configAPPLICATION_ALLOCATED_HEAP */
+Main.c (src):#if (configAPPLICATION_ALLOCATED_HEAP == 1)
