@@ -1,11 +1,6 @@
----- configAPPLICATION_ALLOCATED_HEAP Matches (10 in 6 files) ----
-FreeRTOS.h (middlewares\third_party\freertos\source\include):#ifndef configAPPLICATION_ALLOCATED_HEAP
-FreeRTOS.h (middlewares\third_party\freertos\source\include):	#define configAPPLICATION_ALLOCATED_HEAP 0
-FreeRTOSConfig.h (inc):#define configAPPLICATION_ALLOCATED_HEAP                 1
-Heap_1.c (middlewares\third_party\freertos\source\portable\memmang):#if( configAPPLICATION_ALLOCATED_HEAP == 1 )
-Heap_1.c (middlewares\third_party\freertos\source\portable\memmang):#endif /* configAPPLICATION_ALLOCATED_HEAP */
-Heap_2.c (middlewares\third_party\freertos\source\portable\memmang):#if( configAPPLICATION_ALLOCATED_HEAP == 1 )
-Heap_2.c (middlewares\third_party\freertos\source\portable\memmang):#endif /* configAPPLICATION_ALLOCATED_HEAP */
-Heap_4.c (middlewares\third_party\freertos\source\portable\memmang):#if( configAPPLICATION_ALLOCATED_HEAP == 1 )
-Heap_4.c (middlewares\third_party\freertos\source\portable\memmang):#endif /* configAPPLICATION_ALLOCATED_HEAP */
-Main.c (src):#if (configAPPLICATION_ALLOCATED_HEAP == 1)
+---- DHCP_Task Matches (5 in 4 files) ----
+Dhcp_ethernet.c (src): * Name : DHCP_Task()
+Dhcp_ethernet.c (src):void DHCP_Task(void const * argument)
+Dhcp_ethernet.h (inc):void DHCP_Task(void const * argument);
+Ethernetif.h (inc):void DHCP_Task(void const * argument);
+Lwip.c (src):      osThreadDef(dhcp_task, DHCP_Task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
