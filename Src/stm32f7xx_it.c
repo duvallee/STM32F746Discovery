@@ -38,7 +38,7 @@
 
 
 /* External variables --------------------------------------------------------*/
-
+extern ETH_HandleTypeDef heth;
 extern LTDC_HandleTypeDef hltdc;
 extern DMA2D_HandleTypeDef hdma2d;
 
@@ -148,4 +148,19 @@ void EXTI15_10_IRQHandler(void)
    HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
 }
 
+/******************************************************************************/
+/* STM32F7xx Peripheral Interrupt Handlers                                    */
+/* Add here the Interrupt Handlers for the used peripherals.                  */
+/* For the available peripheral interrupt handler names,                      */
+/* please refer to the startup file (startup_stm32f7xx.s).                    */
+/******************************************************************************/
+
+/**
+* @brief This function handles Ethernet global interrupt.
+*/
+void ETH_IRQHandler(void)
+{
+   HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_6);
+   HAL_ETH_IRQHandler(&heth);
+}
 

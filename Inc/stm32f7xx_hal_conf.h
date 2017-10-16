@@ -59,7 +59,7 @@
 /* #define HAL_DAC_MODULE_ENABLED   */
 /* #define HAL_DCMI_MODULE_ENABLED   */
 #define HAL_DMA2D_MODULE_ENABLED
-/* #define HAL_ETH_MODULE_ENABLED   */
+#define HAL_ETH_MODULE_ENABLED
 /* #define HAL_NAND_MODULE_ENABLED   */
 /* #define HAL_NOR_MODULE_ENABLED   */
 /* #define HAL_SRAM_MODULE_ENABLED   */
@@ -158,7 +158,7 @@
   * @brief This is the HAL system configuration section
   */     
 #define  VDD_VALUE                    ((uint32_t)3300U) /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            ((uint32_t)0U) /*!< tick interrupt priority */
+#define  TICK_INT_PRIORITY            ((uint32_t)0x0F) /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              0U
 #define  ART_ACCLERATOR_ENABLE        0U /* To enable instruction cache and prefetch */
@@ -191,9 +191,9 @@
 /* Section 2: PHY configuration section */
 
 /* DP83848_PHY_ADDRESS Address*/ 
-#define DP83848_PHY_ADDRESS           0x01U
+#define LAN8742A_PHY_ADDRESS                             0x00U
 /* PHY Reset delay these values are based on a 1 ms Systick interrupt*/ 
-#define PHY_RESET_DELAY                 ((uint32_t)0x000000FFU)
+#define PHY_RESET_DELAY                 ((uint32_t)0x00000FFFU)
 /* PHY Configuration delay */
 #define PHY_CONFIG_DELAY                ((uint32_t)0x00000FFFU)
 
@@ -221,10 +221,13 @@
 #define PHY_JABBER_DETECTION            ((uint16_t)0x0002U)  /*!< Jabber condition detected            */
   
 /* Section 4: Extended PHY Registers */
-#define PHY_SR                          ((uint16_t)0x10U)    /*!< PHY status register Offset                      */
+#define PHY_SR                          ((uint16_t)0x1FU)    /*!< PHY status register Offset                      */
 
-#define PHY_SPEED_STATUS                ((uint16_t)0x0002U)  /*!< PHY Speed mask                                  */
-#define PHY_DUPLEX_STATUS               ((uint16_t)0x0004U)  /*!< PHY Duplex mask                                 */
+#define PHY_SPEED_STATUS                ((uint16_t)0x0004U)  /*!< PHY Speed mask                                  */
+#define PHY_DUPLEX_STATUS               ((uint16_t)0x0010U)  /*!< PHY Duplex mask                                 */
+
+#define PHY_ISFR                        ((uint16_t)0x001DU)    /*!< PHY Interrupt Source Flag register Offset   */
+#define PHY_ISFR_INT4                   ((uint16_t)0x0010U)  /*!< PHY Link down inturrupt       */  
 
 /* ################## SPI peripheral configuration ########################## */
 
@@ -233,7 +236,7 @@
 * Deactivated: CRC code cleaned from driver
 */
 
-#define USE_SPI_CRC                     0U
+#define USE_SPI_CRC                     1U
 
 /* Includes ------------------------------------------------------------------*/
 /**

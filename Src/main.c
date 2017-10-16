@@ -44,7 +44,7 @@
 #include "touch_ft5536.h"
 #include "software_timer.h"
 #include "cmsis_os.h"
-
+#include "lwip.h"
 
 // #define USE_CLOCK_INTERNAL
 
@@ -125,6 +125,9 @@ static void MX_TIM6_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM12_Init(void);
 
+// ----------------------------------------------------------------------------
+// task functions
+void network_task(void const* argument);
 
 #if 1
 
@@ -138,7 +141,7 @@ void test_servo_1_task(void const * argument)
    TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) argument;
    uint8_t step                                          = 0;
 
-   debug_output_info("start !!! \r\n");
+//   debug_output_info("start !!! \r\n");
    while (1)
    {
 #if 0
@@ -146,20 +149,20 @@ void test_servo_1_task(void const * argument)
       HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_6);
       osDelay(100);
 #else
-      debug_output_info("idle \r\n");
+//      debug_output_info("idle \r\n");
       if (step == 0)
       {
          pTimer1->Instance->ARR                          = 20000;
          pTimer1->Instance->CCR1                         = 5000;
          step                                            = 180;
-         debug_output_info("180 \r\n");
+//         debug_output_info("180 \r\n");
       }
       else
       {
          pTimer1->Instance->ARR                          = 20000;
          pTimer1->Instance->CCR1                         = 700;
          step                                            = 0;
-         debug_output_info("0 \r\n");
+//         debug_output_info("0 \r\n");
       }
       osDelay(10000);
 #endif
@@ -177,24 +180,24 @@ void test_servo_2_task(void const * argument)
    TIM_HandleTypeDef* pTimer1                            = (TIM_HandleTypeDef*) argument;
    uint8_t step                                          = 0;
 
-   debug_output_info("start !!! \r\n");
+//   debug_output_info("start !!! \r\n");
    while (1)
    {
-      debug_output_info("idle \r\n");
+//      debug_output_info("idle \r\n");
 #if 1
       if (step == 0)
       {
          pTimer1->Instance->ARR                             = 20000;
          pTimer1->Instance->CCR1                            = 5000;
          step                                               = 180;
-         debug_output_info("180 \r\n");
+//         debug_output_info("180 \r\n");
       }
       else
       {
          pTimer1->Instance->ARR                             = 20000;
          pTimer1->Instance->CCR1                            = 700;
          step                                               = 0;
-         debug_output_info("0 \r\n");
+//         debug_output_info("0 \r\n");
       }
 #endif
       osDelay(10000);
@@ -274,6 +277,7 @@ static void MPU_Config(void)
    /* Configure the MPU attributes as Device for Ethernet Descriptors in the SRAM */
    MPU_InitStruct.Enable                                 = MPU_REGION_ENABLE;
    MPU_InitStruct.BaseAddress                            = 0x20010000;
+//   MPU_InitStruct.BaseAddress                            = 0xC0010000;
    MPU_InitStruct.Size                                   = MPU_REGION_SIZE_256B;
    MPU_InitStruct.AccessPermission                       = MPU_REGION_FULL_ACCESS;
    MPU_InitStruct.IsBufferable                           = MPU_ACCESS_BUFFERABLE;
@@ -297,10 +301,6 @@ static void MPU_Config(void)
  * -------------------------------------------------------------------------- */
 static void CPU_CACHE_Enable(void)
 {
-   /* Enable branch prediction */
-   SCB->CCR                                              |= (1 << 18); 
-   __DSB();
-
    /* Enable I-Cache */
    SCB_EnableICache();	
 
@@ -356,13 +356,19 @@ int main(void)
    HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1);
    HAL_TIM_PWM_Start(&htim12, TIM_CHANNEL_1);
 
+   // --------------------------------------------------------------------------
+   // Initialize for LwIP
+   MX_LWIP_Init();
 
 #if 1
+   /* Thread definition for network */
+   osThreadDef(network_task, network_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
+   osThreadCreate(osThread(network_task), (void *) NULL);
+
    /* Thread 1 definition */
    osThreadDef(servo_task_1, test_servo_1_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
    osThreadDef(servo_task_2, test_servo_2_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
 
-// osThreadDef_t
    /* Start thread 1 */
    osThreadCreate(osThread(servo_task_1), (void *) &htim1);
 

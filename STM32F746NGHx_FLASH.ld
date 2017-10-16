@@ -60,8 +60,12 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 320K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 1024K
+FLASH (rx)      	: ORIGIN = 0x08000000, LENGTH = 1024K
+RAM (xrw)      		: ORIGIN = 0x20000000, LENGTH = 320K
+Memory_B1(xrw)   	: ORIGIN = 0xC0010000, LENGTH = 0x80
+Memory_B2(xrw)   	: ORIGIN = 0xC0010080, LENGTH = 0x80
+Memory_B3(xrw)   	: ORIGIN = 0xC004C000, LENGTH = 0x17D0
+Memory_B4(xrw)   	: ORIGIN = 0xC004D7D0, LENGTH = 0x17D0
 }
 
 /* Define output sections */
@@ -182,7 +186,11 @@ SECTIONS
     libgcc.a ( * )
   }
 
-  .ARM.attributes 0 : { *(.ARM.attributes) }
+  .ARM.attributes 	0 			: { *(.ARM.attributes) 		}
+  .RxDecripSection 		: { *(.RxDescripSection) 	} 	>Memory_B1
+  .TxDescripSection 	: { *(.TxDescripSection) 	} 	>Memory_B2
+  .RxarraySection 		: { *(.RxBUF) 		} 			>Memory_B3
+  .TxarraySection 		: { *(.TxBUF) 		} 			>Memory_B4 
 }
 
 
