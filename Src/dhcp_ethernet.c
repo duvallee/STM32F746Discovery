@@ -38,6 +38,21 @@ __IO uint8_t DHCP_state                                  = DHCP_OFF;
 #define GW_ADDR2                                         1
 #define GW_ADDR3                                         1
 
+
+/* --------------------------------------------------------------------------
+ * Name : is_assigned_dhcp_address()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+int is_assigned_dhcp_address(void)
+{
+   if (DHCP_state == DHCP_ADDRESS_ASSIGNED)
+   {
+      return 1;
+   }
+   return 0;
+}
+
 /* --------------------------------------------------------------------------
  * Name : DHCP_Task()
  *
@@ -60,7 +75,7 @@ void DHCP_Task(void const * argument)
    UNUSED(iptxt);
 
    debug_output_info(" \r\n");
-   osDelay(1000);
+   osDelay(250);
 
    if (netif_is_up(netif))
    {

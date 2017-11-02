@@ -45,8 +45,7 @@
 #include "software_timer.h"
 #include "cmsis_os.h"
 #include "lwip.h"
-
-// #define USE_CLOCK_INTERNAL
+#include "network_task.h"
 
 // global variable
 TIM_HandleTypeDef htim6;
@@ -68,7 +67,7 @@ volatile uint32_t *g_DMA2D_FrameBuffer                   = (uint32_t *) 0xC07000
 volatile uint32_t *g_FrameBuffer                         = (uint32_t *) 0xC0780000;
 
 
-#if ( configAPPLICATION_ALLOCATED_HEAP == 1 )
+#if (configAPPLICATION_ALLOCATED_HEAP == 1)
 #if 0
 uint8_t* ucHeap                                          = (uint8_t *) 0xC0000000;
 #else
@@ -100,6 +99,17 @@ int _putc(unsigned char ch)
    return -1;
 }
 
+int _write(int file, char *ptr, int len)
+{
+	int DataIdx;
+
+		for (DataIdx = 0; DataIdx < len; DataIdx++)
+		{
+		   _putc( *ptr++ );
+		}
+	return len;
+}
+
 /* --------------------------------------------------------------------------
  * Name : HAL_GPIO_EXTI_Callback()
  *
@@ -125,9 +135,6 @@ static void MX_TIM6_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM12_Init(void);
 
-// ----------------------------------------------------------------------------
-// task functions
-void network_task(void const* argument);
 
 #if 1
 
@@ -335,9 +342,11 @@ int main(void)
    lcd_log_Init(g_FrameBuffer, RK043FN48H_WIDTH, RK043FN48H_HEIGHT, LTDC_PIXEL_FORMAT_ARGB8888);
    g_start_log                                           = 1;
 
+#if 0
    // --------------------------------------------------------------------------
    // init software timer
    init_software_timer();
+#endif
 
    // --------------------------------------------------------------------------
    debug_output_info("===================================================== \r\n");
@@ -360,48 +369,55 @@ int main(void)
    // Initialize for LwIP
    MX_LWIP_Init();
 
-#if 1
-   /* Thread definition for network */
-   osThreadDef(network_task, network_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
-   osThreadCreate(osThread(network_task), (void *) NULL);
+   // --------------------------------------------------------------------------
+   /* Thread definition for tcp server */
+   osThreadDef(tcp_server_task, network_tcp_server_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+   if (osThreadCreate(osThread(tcp_server_task), (void *) NULL) == NULL)
+   {
+      debug_output_error("Can't create thread : network_tcp_server_task !!!");
+   }
 
+   // --------------------------------------------------------------------------
+   /* Thread definition for communication of tcp */
+   osThreadDef(tcp_task, network_tcp_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+   if (osThreadCreate(osThread(tcp_task), (void *) NULL) == NULL)
+   {
+      debug_output_error("Can't create thread : tcp_task !!!");
+   }
+
+
+
+   // --------------------------------------------------------------------------
+   /* Thread definition for udp server */
+   osThreadDef(udp_server_task, network_udp_server_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+   if (osThreadCreate(osThread(udp_server_task), (void *) NULL) == NULL)
+   {
+      debug_output_error("Can't create thread : network_udp_server_task !!!");
+   }
+
+   // --------------------------------------------------------------------------
    /* Thread 1 definition */
    osThreadDef(servo_task_1, test_servo_1_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
    osThreadDef(servo_task_2, test_servo_2_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
 
    /* Start thread 1 */
-   osThreadCreate(osThread(servo_task_1), (void *) &htim1);
+   if (osThreadCreate(osThread(servo_task_1), (void *) &htim1) == NULL)
+   {
+      debug_output_error("Can't create thread : test_servo_1_task !!!");
+   }
 
    /* Start thread 2 */
-   osThreadCreate(osThread(servo_task_2), (void *) &htim12);
+   if (osThreadCreate(osThread(servo_task_2), (void *) &htim12) == NULL)
+   {
+      debug_output_error("Can't create thread : test_servo_2_task !!!");
+   }
 
+   // --------------------------------------------------------------------------
    /* Start scheduler */
    osKernelStart();
 
    for(;;);
-#else
-#if 1
-   xTaskCreate(test_servo_1_task, "servo motor task 1", 1000, (void *) &htim1, 1, NULL);
-   xTaskCreate(test_servo_2_task, "servo motor task 2", 1000, (void *) &htim12, 1, NULL);
 
-   /* Start scheduler */
-   osKernelStart();
-
-#else
-   // --------------------------------------------------------------------------
-   // add timer for touch
-   add_software_timer(touch_polling, 50, -1, 0);
-
-   // add timer for servo
-   add_software_timer(test_servo_timer1, 1000, -1, (void*) &htim1);
-   add_software_timer(test_servo_timer12, 1000, -1, (void*) &htim12);
-
-   while (1)
-   {
-      proc_software_timer();
-   }
-#endif
-#endif
 }
 
 

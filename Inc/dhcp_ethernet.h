@@ -15,6 +15,7 @@
 #define DHCP_TIMEOUT                                     (uint8_t) 4
 #define DHCP_LINK_DOWN                                   (uint8_t) 5
 
+int is_assigned_dhcp_address(void);
 void DHCP_Task(void const * argument);
 
 #endif   // __DHCP_ETHERNET_H__
