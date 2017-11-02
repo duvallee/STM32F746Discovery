@@ -1,6 +1,6 @@
----- DHCP_Task Matches (5 in 4 files) ----
-Dhcp_ethernet.c (src): * Name : DHCP_Task()
-Dhcp_ethernet.c (src):void DHCP_Task(void const * argument)
-Dhcp_ethernet.h (inc):void DHCP_Task(void const * argument);
-Ethernetif.h (inc):void DHCP_Task(void const * argument);
-Lwip.c (src):      osThreadDef(dhcp_task, DHCP_Task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
+---- HardFault_Handler Matches (5 in 3 files) ----
+Startup_stm32f746xx.s:  .word  HardFault_Handler
+Startup_stm32f746xx.s:   .weak      HardFault_Handler
+Startup_stm32f746xx.s:   .thumb_set HardFault_Handler,Default_Handler
+Stm32f7xx_it.c (src):void HardFault_Handler(void)
+Stm32f7xx_it.h (inc):void HardFault_Handler(void);
