@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+#include <string.h>
 #include "main.h"
 #include "stm32f7xx_hal.h"
 #include "debug_output.h"
@@ -21,7 +22,7 @@
 #include "network_task.h"
 
 // --------------------------------------------------------------------------
-static struct netconn *g_tcp_con                         = NULL;
+static struct netconn *g_udp_con                         = NULL;
 
 /* --------------------------------------------------------------------------
  * Name : network_tcp_server_task()
@@ -52,7 +53,6 @@ void network_tcp_server_task(void const* argument)
    char* buf;
    u16_t buflen;
 
-   UNUSED(g_tcp_con);
    for (;;)
    {
       if (is_assigned_dhcp_address() != 0)
@@ -70,6 +70,7 @@ void network_tcp_server_task(void const* argument)
       debug_output_error("terminate tcp server !!! \r\n");
       return;
    }
+
    // Bind to port TCP_SERVER_PORT with default IP address
    err                                                   = netconn_bind(server_conn, NULL, TCP_SERVER_PORT);
    if (err != ERR_OK)
@@ -119,8 +120,6 @@ void network_tcp_server_task(void const* argument)
       {
          debug_output_error("accept failed !!! : %d \r\n", accept_err);
       }
-
-//      osDelay(1);
    }
 }
 
@@ -132,6 +131,12 @@ void network_tcp_server_task(void const* argument)
 void network_udp_server_task(void const* argument)
 {
    debug_output_info("start !!! \r\n");
+   err_t recv_err, send_err;
+   struct netbuf *inbuf                                  = NULL;
+   struct netbuf *outbuf                                 = NULL;
+   err_t err;
+   char* buf;
+   u16_t buflen;
 
    for (;;)
    {
@@ -142,10 +147,58 @@ void network_udp_server_task(void const* argument)
       osDelay(500);
    }
 
+   // Create a new UDP connection handle
+   g_udp_con                                             = netconn_new(NETCONN_UDP);
+
+   if (g_udp_con == NULL)
+   {
+      debug_output_error("terminate udp server because cann't create socket for UDP !!! \r\n");
+      return;
+   }
+
+   // Bind to port UDP_SERVER_PORT with default IP address
+   err                                                   = netconn_bind(g_udp_con, NULL, UDP_SERVER_PORT);
+   if (err != ERR_OK)
+   {
+      debug_output_error("cann't bind for udp !!! \r\n");
+      return;
+   }
+
    while (1)
    {
-      osDelay(1000);
-//      debug_output_info(" \r\n");
+      recv_err                                        = netconn_recv(g_udp_con, &inbuf);
+      if (recv_err == ERR_OK)
+      {
+         if (netconn_err(g_udp_con) == ERR_OK) 
+         {
+            netbuf_data(inbuf, (void**) &buf, &buflen);
+            debug_output_info("received byte %d : %s (%s) \r\n", buflen, buf, ipaddr_ntoa(&(inbuf->addr)));
+         }
+      }
+      outbuf                                    = netbuf_new();
+      buflen                                    = sizeof("send udp response message : hellow world !!!") + 1;
+      buf                                       = (char*) netbuf_alloc(outbuf, buflen);
+
+      memset((void*) buf, 0, (size_t) buflen);
+      sprintf(buf, "send udp response message : hellow world !!!");
+
+      ip_addr_set(&(outbuf->addr), &(inbuf->addr));
+      outbuf->port                              = UDP_SERVER_PORT;
+
+      send_err                                  = netconn_send(g_udp_con, outbuf);
+
+      if (send_err != ERR_OK)
+      {
+         debug_output_info("sendto error !!! \r\n");
+      }
+      else
+      {
+         debug_output_info("send byte %d : %s (%s) \r\n", buflen, buf, ipaddr_ntoa(&(outbuf->addr)));
+      }
+
+      netbuf_free(outbuf);
+      netbuf_delete(outbuf);
+      netbuf_delete(inbuf);
    }
 }
 
