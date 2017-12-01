@@ -160,14 +160,14 @@ void test_servo_1_task(void const * argument)
       if (step == 0)
       {
          pTimer1->Instance->ARR                          = 20000;
-         pTimer1->Instance->CCR1                         = 5000;
+         pTimer1->Instance->CCR1                         = 3000;
          step                                            = 180;
 //         debug_output_info("180 \r\n");
       }
       else
       {
          pTimer1->Instance->ARR                          = 20000;
-         pTimer1->Instance->CCR1                         = 700;
+         pTimer1->Instance->CCR1                         = 1000;
          step                                            = 0;
 //         debug_output_info("0 \r\n");
       }
@@ -195,14 +195,14 @@ void test_servo_2_task(void const * argument)
       if (step == 0)
       {
          pTimer1->Instance->ARR                             = 20000;
-         pTimer1->Instance->CCR1                            = 5000;
+         pTimer1->Instance->CCR1                            = 3000;
          step                                               = 180;
 //         debug_output_info("180 \r\n");
       }
       else
       {
          pTimer1->Instance->ARR                             = 20000;
-         pTimer1->Instance->CCR1                            = 700;
+         pTimer1->Instance->CCR1                            = 1000;
          step                                               = 0;
 //         debug_output_info("0 \r\n");
       }
