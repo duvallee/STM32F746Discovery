@@ -1,31 +1,5 @@
----- GPIO_PIN_7 Matches (30 in 6 files) ----
-Ethernetif.c (src):      GPIO_InitStruct.Pin                                = GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_7;
-Ethernetif.c (src):      HAL_GPIO_DeInit(GPIOA, GPIO_PIN_1  | GPIO_PIN_2  | GPIO_PIN_7);
-Main.h (inc):#define ARDUINO_CN4_PIN_01                               GPIO_PIN_7
-Stm32f7xx_hal_gpio.h (drivers\stm32f7xx_hal_driver\inc):#define GPIO_PIN_7                 ((uint16_t)0x0080U)  /* Pin 7 selected    */
-Stm32f7xx_hal_gpio_ex.h (drivers\stm32f7xx_hal_driver\inc):                              GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7)
-Stm32f7xx_hal_msp.c (src):   gpio_init_structure.Pin                               = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_8 |
-Stm32f7xx_hal_msp.c (src):                                                           GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7 | \
-Stm32f7xx_hal_msp.c (src):                                                           GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
-Stm32f7xx_hal_msp.c (src):      GPIO_InitStruct.Pin                                = GPIO_PIN_6 | GPIO_PIN_7;
-Stm32f7xx_hal_msp.c (src):      HAL_GPIO_DeInit(GPIOC, GPIO_PIN_6 | GPIO_PIN_7);
-Stm32f7xx_hal_msp.c (src):      GPIO_InitStruct.Pin                                = GPIO_PIN_7 | GPIO_PIN_8;
-Stm32f7xx_hal_msp.c (src):      HAL_GPIO_DeInit(GPIOH, GPIO_PIN_7 | GPIO_PIN_8);
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):#define LL_GPIO_PIN_7                      GPIO_BSRR_BS_7 /*!< Select pin 7 */
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
-Stm32f7xx_ll_gpio.h (drivers\stm32f7xx_hal_driver\inc):  *         @arg @ref LL_GPIO_PIN_7
+---- CDC_Control_FS Matches (4 in 1 files) ----
+Usbd_cdc_if.c (src\usb):static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
+Usbd_cdc_if.c (src\usb):   CDC_Control_FS,
+Usbd_cdc_if.c (src\usb):  * @brief  CDC_Control_FS
+Usbd_cdc_if.c (src\usb):static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
