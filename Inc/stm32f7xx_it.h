@@ -56,6 +56,10 @@ void PendSV_Handler(void);
 void SysTick_Handler(void);
 void ETH_IRQHandler(void);
 
+#if defined(DEBUG_OUTPUT_USB)
+void OTG_FS_IRQHandler(void);
+#endif
+
 #ifdef __cplusplus
 }
 #endif

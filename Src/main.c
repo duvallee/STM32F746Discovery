@@ -46,16 +46,31 @@
 #include "cmsis_os.h"
 #include "lwip.h"
 #include "network_task.h"
+#if defined(DEBUG_OUTPUT_USB)
+#include "usb_device.h"
+#include "usbd_core.h"
+#include "usbd_desc.h"
+#include "usbd_cdc.h"
+#include "usbd_cdc_if.h"
+#endif
 
+// -----------------------------------------------------------------------------
 // global variable
 TIM_HandleTypeDef htim6;
+#if defined(DEBUG_OUTPUT_UART)
 UART_HandleTypeDef huart6;
+#endif
 LTDC_HandleTypeDef hltdc;
 DMA2D_HandleTypeDef hdma2d;
 SDRAM_HandleTypeDef hsdram1;
 DMA_HandleTypeDef hdma_memtomem_dma2_stream0;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim12;
+#if defined(DEBUG_OUTPUT_USB)
+/* USB Device Core handle declaration */
+USBD_HandleTypeDef hUsbDeviceFS;
+#endif
+// -----------------------------------------------------------------------------
 
 #define MILLI_SECOND                                     1000
 volatile uint32_t g_System_Start_Second                  = 0;
@@ -92,10 +107,12 @@ int _putc(unsigned char ch)
       return -1;
    }
    draw_char(ch);
+#if defined(DEBUG_OUTPUT_UART)
    if (HAL_UART_Transmit(&huart6, (uint8_t *) &ch, sizeof(ch), 0xFFFF) == HAL_OK)
    {
       return 0;
    }
+#endif
    return -1;
 }
 
@@ -130,10 +147,15 @@ static void MX_LTDC_Init(void);
 static void MX_DMA2D_Init(void);
 static void MX_DMA_Init(void);
 static void MX_FMC_Init(void);
+#if defined(DEBUG_OUTPUT_UART)
 static void MX_USART6_UART_Init(void);
+#endif
 static void MX_TIM6_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM12_Init(void);
+#if defined(DEBUG_OUTPUT_USB)
+static void MX_USB_DEVICE_Init(void);
+#endif
 
 
 #if 1
@@ -331,7 +353,14 @@ int main(void)
    MX_GPIO_Init();
    MX_DMA_Init();
    MX_FMC_Init();
+#if defined(DEBUG_OUTPUT_UART)
    MX_USART6_UART_Init();
+#endif
+
+#if defined(DEBUG_OUTPUT_USB)
+   MX_USB_DEVICE_Init();
+#endif
+
    MX_TIM6_Init();
    MX_LTDC_Init();
    MX_DMA2D_Init();
@@ -446,80 +475,61 @@ void HAL_SYSTICK_Callback(void)
    }
 }
 
-#if defined(USE_CLOCK_INTERNAL)
-/* --------------------------------------------------------------------------
- * Name : SystemClock_Config()
- *        System Clock Configuration
- *
- * -------------------------------------------------------------------------- */
+
 void SystemClock_Config(void)
 {
    RCC_OscInitTypeDef RCC_OscInitStruct;
    RCC_ClkInitTypeDef RCC_ClkInitStruct;
+#if defined(SYSTEM_CLOCK_200MHZ)
    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+#endif
 
    /**Configure the main internal regulator output voltage 
    */
    __HAL_RCC_PWR_CLK_ENABLE();
-   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE3);
+   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
+#if defined(SYSTEM_CLOCK_MAX_216MHZ)                                             // HCLK : 216 MHz
    /**Initializes the CPU, AHB and APB busses clocks 
    */
-   RCC_OscInitStruct.OscillatorType                      = RCC_OSCILLATORTYPE_HSI;
-   RCC_OscInitStruct.HSIState                            = RCC_HSI_ON;
-   RCC_OscInitStruct.HSICalibrationValue                 = 16;
-   RCC_OscInitStruct.PLL.PLLState                        = RCC_PLL_NONE;
+   RCC_OscInitStruct.OscillatorType                      = RCC_OSCILLATORTYPE_HSE;
+   RCC_OscInitStruct.HSEState                            = RCC_HSE_ON;
+   RCC_OscInitStruct.HSIState                            = RCC_HSI_OFF;
+   RCC_OscInitStruct.PLL.PLLState                        = RCC_PLL_ON;
+   RCC_OscInitStruct.PLL.PLLSource                       = RCC_PLLSOURCE_HSE;
+   RCC_OscInitStruct.PLL.PLLM                            = 25;
+   RCC_OscInitStruct.PLL.PLLN                            = 432;
+   RCC_OscInitStruct.PLL.PLLP                            = RCC_PLLP_DIV2;
+   RCC_OscInitStruct.PLL.PLLQ                            = 9;
    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
    {
       _Error_Handler(__FILE__, __LINE__);
    }
 
+   /**Activate the Over-Drive mode 
+   */
+   if (HAL_PWREx_EnableOverDrive() != HAL_OK)
+   {
+      _Error_Handler(__FILE__, __LINE__);
+   }
+
    /**Initializes the CPU, AHB and APB busses clocks 
    */
-   RCC_ClkInitStruct.ClockType                           = RCC_CLOCKTYPE_HCLK       |
-                                                           RCC_CLOCKTYPE_SYSCLK     |
-                                                           RCC_CLOCKTYPE_PCLK1      |
+   RCC_ClkInitStruct.ClockType                           = RCC_CLOCKTYPE_HCLK    |
+                                                           RCC_CLOCKTYPE_SYSCLK  |
+                                                           RCC_CLOCKTYPE_PCLK1   |
                                                            RCC_CLOCKTYPE_PCLK2;
-   RCC_ClkInitStruct.SYSCLKSource                        = RCC_SYSCLKSOURCE_HSI;
+   RCC_ClkInitStruct.SYSCLKSource                        = RCC_SYSCLKSOURCE_PLLCLK;
    RCC_ClkInitStruct.AHBCLKDivider                       = RCC_SYSCLK_DIV1;
-   RCC_ClkInitStruct.APB1CLKDivider                      = RCC_HCLK_DIV1;
-   RCC_ClkInitStruct.APB2CLKDivider                      = RCC_HCLK_DIV1;
+   RCC_ClkInitStruct.APB1CLKDivider                      = RCC_HCLK_DIV4;
+   RCC_ClkInitStruct.APB2CLKDivider                      = RCC_HCLK_DIV2;
 
-   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
    {
       _Error_Handler(__FILE__, __LINE__);
    }
 
-   PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART6;
-   PeriphClkInitStruct.Usart6ClockSelection = RCC_USART6CLKSOURCE_PCLK2;
-   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-   {
-      _Error_Handler(__FILE__, __LINE__);
-   }
-
-   /**Configure the Systick interrupt time 
-   */
-   HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-
-   /**Configure the Systick 
-   */
-   HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-   /* SysTick_IRQn interrupt configuration */
-   HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
-}
-#else
-void SystemClock_Config(void)
-{
-   RCC_OscInitTypeDef RCC_OscInitStruct;
-   RCC_ClkInitTypeDef RCC_ClkInitStruct;
-
-   /**Configure the main internal regulator output voltage 
-   */
-   __HAL_RCC_PWR_CLK_ENABLE();
-
-   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
+#elif defined(SYSTEM_CLOCK_200MHZ)                                               // HCLK : 200 MHz
    /**Initializes the CPU, AHB and APB busses clocks 
    */
    RCC_OscInitStruct.OscillatorType                      = RCC_OSCILLATORTYPE_HSE;
@@ -558,6 +568,22 @@ void SystemClock_Config(void)
       _Error_Handler(__FILE__, __LINE__);
    }
 
+   PeriphClkInitStruct.PeriphClockSelection              = RCC_PERIPHCLK_LTDC | RCC_PERIPHCLK_CLK48;
+   PeriphClkInitStruct.PLLSAI.PLLSAIN                    = 384;
+   PeriphClkInitStruct.PLLSAI.PLLSAIR                    = 5;
+   PeriphClkInitStruct.PLLSAI.PLLSAIQ                    = 2;
+   PeriphClkInitStruct.PLLSAI.PLLSAIP                    = RCC_PLLSAIP_DIV8;
+   PeriphClkInitStruct.PLLSAIDivQ                        = 1;
+   PeriphClkInitStruct.PLLSAIDivR                        = RCC_PLLSAIDIVR_8;
+   PeriphClkInitStruct.Clk48ClockSelection               = RCC_CLK48SOURCE_PLLSAIP;
+   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+   {
+   _Error_Handler(__FILE__, __LINE__);
+   }
+#else
+#error "Not defined clock"
+#endif
+
    /**Configure the Systick interrupt time 
    */
    HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
@@ -569,7 +595,7 @@ void SystemClock_Config(void)
    /* SysTick_IRQn interrupt configuration */
    HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
-#endif
+
 
 /* --------------------------------------------------------------------------
  * Name : MX_LTDC_Init()
@@ -855,6 +881,19 @@ static void MX_GPIO_Init(void)
    GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_LOW;
    HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+#if defined(DEBUG_OUTPUT_UART)
+   /**USART6 GPIO Configuration    
+   PC6     ------> USART6_TX
+   PC7     ------> USART6_RX 
+   */
+   GPIO_InitStruct.Pin                                   = GPIO_PIN_6 | GPIO_PIN_7;
+   GPIO_InitStruct.Mode                                  = GPIO_MODE_AF_PP;
+   GPIO_InitStruct.Pull                                  = GPIO_PULLUP;
+   GPIO_InitStruct.Speed                                 = GPIO_SPEED_FREQ_VERY_HIGH;
+   GPIO_InitStruct.Alternate                             = GPIO_AF8_USART6;
+   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+#endif
+
    // Configure GPIO pin : PK3, backlight on
    GPIO_InitStruct.Pin                                   = GPIO_PIN_0;
    GPIO_InitStruct.Mode                                  = GPIO_MODE_OUTPUT_PP;
@@ -926,6 +965,7 @@ static void MX_TIM6_Init(void)
 #endif
 }
 
+#if defined(DEBUG_OUTPUT_UART)
 /* --------------------------------------------------------------------------
  * Name : MX_USART6_UART_Init()
  *
@@ -948,6 +988,23 @@ static void MX_USART6_UART_Init(void)
       _Error_Handler(__FILE__, __LINE__);
    }
 }
+#endif
+
+#if defined(DEBUG_OUTPUT_USB)
+/* --------------------------------------------------------------------------
+ * Name : MX_USB_DEVICE_Init()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+static void MX_USB_DEVICE_Init(void)
+{
+   /* Init Device Library,Add Supported Class and Start the library*/
+   USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS);
+   USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC);
+   USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
+   USBD_Start(&hUsbDeviceFS);
+}
+#endif
 
 /* --------------------------------------------------------------------------
  * Name : MX_TIM1_Init()

@@ -35,13 +35,22 @@
 #include "stm32f7xx.h"
 #include "stm32f7xx_it.h"
 #include "cmsis_os.h"
-
+#if defined(DEBUG_OUTPUT_USB)
+#include "usb_device.h"
+#include "usbd_core.h"
+#include "usbd_desc.h"
+#include "usbd_cdc.h"
+#include "usbd_cdc_if.h"
+#endif
 
 /* External variables --------------------------------------------------------*/
 extern ETH_HandleTypeDef heth;
 extern LTDC_HandleTypeDef hltdc;
 extern DMA2D_HandleTypeDef hdma2d;
 
+#if defined(DEBUG_OUTPUT_USB)
+extern PCD_HandleTypeDef hpcd_USB_OTG_FS;
+#endif
 /******************************************************************************/
 /*            Cortex-M7 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
@@ -163,4 +172,16 @@ void ETH_IRQHandler(void)
    HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_6);
    HAL_ETH_IRQHandler(&heth);
 }
+
+#if defined(DEBUG_OUTPUT_USB)
+/**
+* @brief This function handles USB On The Go FS global interrupt.
+*/
+void OTG_FS_IRQHandler(void)
+{
+   HAL_PCD_IRQHandler(&hpcd_USB_OTG_FS);
+}
+
+#endif
+
 

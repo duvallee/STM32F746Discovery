@@ -15,7 +15,6 @@
 ######################################
 TARGET = STM32F746Discovery
 
-
 ######################################
 # building variables
 ######################################
@@ -37,6 +36,9 @@ Application/User \
 Application \
 Drivers
 
+ifeq ($(DEBUG_OUTPUT_DEVICE), USB)
+SOURCES_DIR +=  Middlewares\ST\STM32_USB_Device_Library
+endif
 # firmware library path
 PERIFLIB_PATH = 
 
@@ -173,6 +175,22 @@ Src/network_task.c \
 Src/dhcp_ethernet.c	\
 # end of source
 
+# C sources
+ifeq ($(DEBUG_OUTPUT_DEVICE), USB)
+C_SOURCES +=  Src/usb/usbd_conf.c \
+Src/usb/usbd_cdc_if.c \
+Src/usb/usbd_desc.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pcd.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_pcd_ex.c \
+Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_ll_usb.c \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
+Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
+Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c
+endif
+# end of source
+
+
 # ASM sources
 ASM_SOURCES =  \
 startup_stm32f746xx.s
@@ -250,6 +268,14 @@ C_INCLUDES =  \
 -IMiddlewares/Third_Party/LwIP/system/arch \
 # end of include
 
+# C includes
+ifeq ($(DEBUG_OUTPUT_DEVICE), USB)
+C_INCLUDES +=  \
+-IMiddlewares/ST/STM32_USB_Device_Library/Core/Inc \
+-IMiddlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc
+endif
+# end of include
+
 
 # compile gcc flags
 ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
@@ -263,6 +289,15 @@ endif
 
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@:%.o=%.d)"
+
+$(info Checking if custom header is needed)
+ifeq ($(DEBUG_OUTPUT_DEVICE), UART)
+CFLAGS += -DDEBUG_OUTPUT_UART -DSYSTEM_CLOCK_200MHZ
+endif
+
+ifeq ($(DEBUG_OUTPUT_DEVICE), USB)
+CFLAGS += -DDEBUG_OUTPUT_USB -DSYSTEM_CLOCK_MAX_216MHZ
+endif
 
 
 #######################################
