@@ -1,5 +1,2 @@
----- CDC_Control_FS Matches (4 in 1 files) ----
-Usbd_cdc_if.c (src\usb):static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length);
-Usbd_cdc_if.c (src\usb):   CDC_Control_FS,
-Usbd_cdc_if.c (src\usb):  * @brief  CDC_Control_FS
-Usbd_cdc_if.c (src\usb):static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
+---- CDC_Transmit_HS Matches (1 in 1 files) ----
+Usbd_cdc_if.h (inc):uint8_t CDC_Transmit_HS(uint8_t* Buf, uint16_t Len);
