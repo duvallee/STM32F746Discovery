@@ -292,7 +292,7 @@ static void low_level_init(struct netif *netif)
     netif->flags                                         |= NETIF_FLAG_BROADCAST;
   #endif /* LWIP_ARP */
   
-/* create a binary semaphore used for informing ethernetif of frame reception */
+   /* create a binary semaphore used for informing ethernetif of frame reception */
    osSemaphoreDef(SEM);
    s_xSemaphore                                          = osSemaphoreCreate(osSemaphore(SEM), 1);
 

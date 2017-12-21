@@ -90,11 +90,12 @@
 #define USBD_free                                        free
 #define USBD_memset                                      memset
 #define USBD_memcpy                                      memcpy
-
 #define USBD_Delay                                       HAL_Delay
-    
- /* DEBUG macros */  
 
+// task for usb cable detect ...
+void USBD_LL_Cable_Detect(void const * argument);
+
+/* DEBUG macros */  
 #if (USBD_DEBUG_LEVEL > 0)
 #define  USBD_UsrLog(...)                                printf(__VA_ARGS__);\
                                                          printf("\n");
@@ -104,7 +105,6 @@
                             
                             
 #if (USBD_DEBUG_LEVEL > 1)
-
 #define  USBD_ErrLog(...)                                printf("ERROR: ") ;\
                                                          printf(__VA_ARGS__);\
                                                          printf("\n");

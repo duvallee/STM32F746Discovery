@@ -154,8 +154,16 @@ void LTDC_IRQHandler(void)
 */
 void EXTI15_10_IRQHandler(void)
 {
-   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
-}
+   if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13) != 0)
+   {
+      HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_13);
+   }
+
+   if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_12) != 0)
+   {
+      HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_12);
+   }
+ }
 
 /******************************************************************************/
 /* STM32F7xx Peripheral Interrupt Handlers                                    */

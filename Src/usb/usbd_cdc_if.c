@@ -47,6 +47,14 @@
 */
 
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
+#include "main.h"
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal.h"
+#include "debug_output.h"
+
+#include "cmsis_os.h"
+
 #include "usbd_cdc_if.h"
 
 /* Define size for the receive and transmit buffer over CDC */
@@ -214,5 +222,54 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
    USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
    result                                                = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
    return result;
+}
+
+#define CDC_LOG_BUFFER_SIZE                              512
+static uint8_t g_cdc_log_buffer[CDC_LOG_BUFFER_SIZE];
+static uint16_t g_cdc_log_buffer_index                   = 0;
+static uint16_t g_cdc_log_buffer_data_length             = 0;
+
+/* --------------------------------------------------------------------------
+ * Name : CDC_Log_Write_Task()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void CDC_Log_Write_Task(void const * argument)
+{
+   while (1)
+   {
+      if (g_cdc_log_buffer_data_length > 0)
+      {
+         if (g_cdc_log_buffer_data_length > (CDC_LOG_BUFFER_SIZE - g_cdc_log_buffer_index))
+         {
+            CDC_Transmit_FS(&(g_cdc_log_buffer[g_cdc_log_buffer_index]), CDC_LOG_BUFFER_SIZE - g_cdc_log_buffer_data_length);
+            CDC_Transmit_FS(&(g_cdc_log_buffer[0]), g_cdc_log_buffer_data_length - g_cdc_log_buffer_index);
+         }
+         else
+         {
+            CDC_Transmit_FS(&(g_cdc_log_buffer[0]), g_cdc_log_buffer_data_length);
+         }
+         g_cdc_log_buffer_index                          = 0;
+         g_cdc_log_buffer_data_length                    = 0;
+      }
+      osDelay(10);
+   }
+}
+
+/* --------------------------------------------------------------------------
+ * Name : CDC_Log_Write()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+void CDC_Log_Write(uint8_t ch)
+{
+   g_cdc_log_buffer[g_cdc_log_buffer_index]              = ch;
+   g_cdc_log_buffer_index++;
+   g_cdc_log_buffer_data_length++;
+   g_cdc_log_buffer_index                                %= CDC_LOG_BUFFER_SIZE;
+   if (g_cdc_log_buffer_data_length >= CDC_LOG_BUFFER_SIZE)
+   {
+      g_cdc_log_buffer_data_length                       = CDC_LOG_BUFFER_SIZE;
+   }
 }
 

@@ -47,10 +47,17 @@
   ******************************************************************************
 */
 /* Includes ------------------------------------------------------------------*/
+#include <stdio.h>
+#include "main.h"
 #include "stm32f7xx.h"
 #include "stm32f7xx_hal.h"
+#include "debug_output.h"
+
+#include "cmsis_os.h"
+
 #include "usbd_def.h"
 #include "usbd_core.h"
+
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 void _Error_Handler(char * file, int line);
@@ -72,7 +79,7 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
       PA12     ------> USB_OTG_FS_DP
       PA11     ------> USB_OTG_FS_DM
       PA10     ------> USB_OTG_FS_ID
-      PA9      ------> USB_OTG_FS_VBUS 
+      PJ12     ------> USB_OTG_FS_VBUS
       */
       GPIO_InitStruct.Pin                                = GPIO_PIN_12 | GPIO_PIN_11 | GPIO_PIN_10;
       GPIO_InitStruct.Mode                               = GPIO_MODE_AF_PP;
@@ -81,10 +88,12 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
       GPIO_InitStruct.Alternate                          = GPIO_AF10_OTG_FS;
       HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-      GPIO_InitStruct.Pin                                = GPIO_PIN_9;
-      GPIO_InitStruct.Mode                               = GPIO_MODE_INPUT;
+      // PJ12 : USB_OTG_FS_VBUS
+      GPIO_InitStruct.Pin                                = GPIO_PIN_12;
+      GPIO_InitStruct.Mode                               = GPIO_MODE_IT_RISING_FALLING;
       GPIO_InitStruct.Pull                               = GPIO_NOPULL;
-      HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+      GPIO_InitStruct.Speed                              = GPIO_SPEED_FREQ_LOW;
+      HAL_GPIO_Init(GPIOJ, &GPIO_InitStruct);
 
       /* Peripheral clock enable */
       __HAL_RCC_USB_OTG_FS_CLK_ENABLE();
@@ -92,6 +101,14 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef* pcdHandle)
       /* Peripheral interrupt init */
       HAL_NVIC_SetPriority(OTG_FS_IRQn, 7, 0);
       HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
+
+      // EXTI interrupt init for PI12 (EXTI 12)
+      /* The highest interrupt priority that can be used by any interrupt service
+         routine that makes calls to interrupt safe FreeRTOS API functions.  DO NOT CALL
+         INTERRUPT SAFE FREERTOS API FUNCTIONS FROM ANY INTERRUPT THAT HAS A HIGHER
+         PRIORITY THAN THIS! (higher priorities are lower numeric values. */
+      HAL_NVIC_SetPriority(EXTI15_10_IRQn,  configLIBRARY_MAX_SYSCALL_INTERRUPT_PRIORITY + 1, 0);
+      HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
    }
   
 }
@@ -258,6 +275,42 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *hpcd)
 {
    USBD_LL_DevDisconnected((USBD_HandleTypeDef*)hpcd->pData);
 }
+
+
+#if defined(DEBUG_OUTPUT_USB)
+/* --------------------------------------------------------------------------
+ * Name : USBD_LL_Cable_Detect()
+ *
+ *
+ * -------------------------------------------------------------------------- */
+extern osSemaphoreId usb_Cable_detect_Semaphore;
+#ifdef TIME_WAITING_FOR_INPUT
+#undef TIME_WAITING_FOR_INPUT
+#endif
+
+#define TIME_WAITING_FOR_INPUT                           (uint32_t) 0xffffffffUL
+
+void USBD_LL_Cable_Detect(void const * argument)
+{
+   USBD_HandleTypeDef* pUsbDeviceFS                      = (USBD_HandleTypeDef*) argument;
+
+   while (1)
+   {
+      if (osSemaphoreWait(usb_Cable_detect_Semaphore, TIME_WAITING_FOR_INPUT) == osOK)
+      {
+         if (HAL_GPIO_ReadPin(GPIOJ, GPIO_PIN_12) == GPIO_PIN_RESET)
+         {
+            USBD_LL_Stop(pUsbDeviceFS);
+         }
+         else
+         {
+            USBD_Start(pUsbDeviceFS);
+         }
+      }
+   }
+
+}
+#endif
 
 /*******************************************************************************
                        LL Driver Interface (USB Device Library --> PCD)

@@ -69,6 +69,8 @@ TIM_HandleTypeDef htim12;
 #if defined(DEBUG_OUTPUT_USB)
 /* USB Device Core handle declaration */
 USBD_HandleTypeDef hUsbDeviceFS;
+/* Semaphore to signal incoming packets */
+osSemaphoreId usb_Cable_detect_Semaphore                 = NULL;
 #endif
 // -----------------------------------------------------------------------------
 
@@ -113,6 +115,20 @@ int _putc(unsigned char ch)
       return 0;
    }
 #endif
+
+#if defined(DEBUG_OUTPUT_USB)
+   CDC_Log_Write(ch);
+#if 0
+   while (CDC_Transmit_FS((uint8_t *) &ch, 1) != USBD_OK)
+   {
+      if (retry_count++ > 5)
+      {
+         break;
+      }
+   }
+#endif
+#endif
+
    return -1;
 }
 
@@ -138,6 +154,16 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
    {
       HAL_GPIO_TogglePin(GPIOI, GPIO_PIN_1);
    }
+
+#if defined(DEBUG_OUTPUT_USB)
+   if (GPIO_Pin == GPIO_PIN_12)
+   {
+      if (usb_Cable_detect_Semaphore != NULL)
+      {
+         osSemaphoreRelease(usb_Cable_detect_Semaphore);
+      }
+   }
+#endif
 }
 
 /* Private function prototypes -----------------------------------------------*/
@@ -159,7 +185,6 @@ static void MX_USB_DEVICE_Init(void);
 
 
 #if 1
-
 /* --------------------------------------------------------------------------
  * Name : test_servo_1_task()
  *
@@ -178,7 +203,7 @@ void test_servo_1_task(void const * argument)
       HAL_GPIO_TogglePin(GPIOG, GPIO_PIN_6);
       osDelay(100);
 #else
-//      debug_output_info("idle \r\n");
+      debug_output_info("idle \r\n");
       if (step == 0)
       {
          pTimer1->Instance->ARR                          = 20000;
@@ -212,7 +237,7 @@ void test_servo_2_task(void const * argument)
 //   debug_output_info("start !!! \r\n");
    while (1)
    {
-//      debug_output_info("idle \r\n");
+//    debug_output_info("idle \r\n");
 #if 1
       if (step == 0)
       {
@@ -414,8 +439,6 @@ int main(void)
       debug_output_error("Can't create thread : tcp_task !!!");
    }
 
-
-
    // --------------------------------------------------------------------------
    /* Thread definition for udp server */
    osThreadDef(udp_server_task, network_udp_server_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE * 2);
@@ -424,6 +447,27 @@ int main(void)
       debug_output_error("Can't create thread : network_udp_server_task !!!");
    }
 
+#if defined(DEBUG_OUTPUT_USB)
+   // --------------------------------------------------------------------------
+   osSemaphoreDef(SEM);
+   usb_Cable_detect_Semaphore                            = osSemaphoreCreate(osSemaphore(SEM), 1);
+
+   /* Thread definition for usb cable detect */
+   osThreadDef(usb_cable_detect_task, USBD_LL_Cable_Detect, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
+   if (osThreadCreate(osThread(usb_cable_detect_task), (void *) &hUsbDeviceFS) == NULL)
+   {
+      debug_output_error("Can't create thread : USBD_LL_Cable_Detect !!!");
+   }
+
+   osThreadDef(cdc_log_write_task, CDC_Log_Write_Task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
+   if (osThreadCreate(osThread(cdc_log_write_task), (void *) &hUsbDeviceFS) == NULL)
+   {
+      debug_output_error("Can't create thread : USBD_LL_Cable_Detect !!!");
+   }
+#endif
+
+
+#if 1
    // --------------------------------------------------------------------------
    /* Thread 1 definition */
    osThreadDef(servo_task_1, test_servo_1_task, osPriorityNormal, 0, configMINIMAL_STACK_SIZE);
@@ -440,6 +484,7 @@ int main(void)
    {
       debug_output_error("Can't create thread : test_servo_2_task !!!");
    }
+#endif
 
    // --------------------------------------------------------------------------
    /* Start scheduler */
@@ -1002,7 +1047,9 @@ static void MX_USB_DEVICE_Init(void)
    USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS);
    USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC);
    USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
+#if 0
    USBD_Start(&hUsbDeviceFS);
+#endif
 }
 #endif
 
