@@ -182,12 +182,12 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
          g_usbd_cdc_linecoding.bCharFormat               = *(pbuf + 4);
          g_usbd_cdc_linecoding.bParityType               = *(pbuf + 5);
          g_usbd_cdc_linecoding.bDataBits                 = *(pbuf + 6);
-
+#if 0
          debug_output_dump("CDC_SET_LINE_CODING(%d) : [%02X] [%02X] [%02X] [%02X] [%02X] [%02X] [%02X] \r\n\r\n",
                                  length, *(pbuf + 0), *(pbuf + 1), *(pbuf + 2), *(pbuf + 3),
                                  *(pbuf + 4), *(pbuf + 5), *(pbuf + 6));
          debug_output_dump("==================================================== \r\n");
-
+#endif
          break;
 
       case CDC_GET_LINE_CODING :
@@ -195,11 +195,12 @@ static int8_t CDC_Control_FS(uint8_t cmd, uint8_t* pbuf, uint16_t length)
          *(pbuf + 4)                                     = g_usbd_cdc_linecoding.bCharFormat;
          *(pbuf + 5)                                     = g_usbd_cdc_linecoding.bParityType;
          *(pbuf + 6)                                     = g_usbd_cdc_linecoding.bDataBits;
-
+#if 0
          debug_output_dump("==================================================== \r\n");
          debug_output_dump("CDC_GET_LINE_CODING(%d) : [%02X] [%02X] [%02X] [%02X] [%02X] [%02X] [%02X] \r\n\r\n",
                                  length, *(pbuf + 0), *(pbuf + 1), *(pbuf + 2), *(pbuf + 3),
                                  *(pbuf + 4), *(pbuf + 5), *(pbuf + 6));
+#endif
          break;
 
       case CDC_SET_CONTROL_LINE_STATE :
