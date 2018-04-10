@@ -1,0 +1,15 @@
+;
+; test cmm file : Create by duvallee, 2018-01-25
+;
+sys.d
+sys.reset
+sys.u
+
+Print "STM32F746NG"
+SYStem.CPU STM32F746NG
+
+sys.u
+
+data.load.elf "build/STM32F746Discovery.elf" /gnu
+sYmbol.SourcePATH.TRANSLATE "\home\duvallee.lee" "Y:\" 
+list
