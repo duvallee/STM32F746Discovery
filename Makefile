@@ -193,7 +193,7 @@ endif
 
 # ASM sources
 ASM_SOURCES =  \
-startup_stm32f746xx.s
+startup/startup_stm32f746xx.s
 
 
 ######################################
@@ -304,7 +304,7 @@ endif
 # LDFLAGS
 #######################################
 # link script
-LDSCRIPT = STM32F746NGHx_FLASH.ld
+LDSCRIPT = TrueStudio/STM32F746NGHx_FLASH.ld
 
 # libraries
 LIBS = -lc -lm -lnosys
