@@ -45,6 +45,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/STM32_USB_Device_Library</locationURI>
 		</link>
 		<link>
+			<name>STemWin</name>
+			<type>2</type>
+			<location>C:/STM32F746Discovery/Middlewares/ST/STemWin</location>
+		</link>
+		<link>
 			<name>src</name>
 			<type>2</type>
 			<locationURI>PARENT-1-PROJECT_LOC/src</locationURI>

@@ -40,10 +40,11 @@
   */
 
 /* Includes ------------------------------------------------------------------*/
+#if 0
 #include "LCDConf.h"
 #include "GUI_Private.h"
-
 /** @addtogroup LCD CONFIGURATION
+
   * @{
   */
 
@@ -1876,3 +1877,5 @@ void DMA2D_CopyBuffer_YCbCr_To_RGB(uint32_t *pSrc, uint16_t xsize, uint16_t ysiz
 }
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+#endif
+
